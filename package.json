@@ -1,0 +1,27 @@
+{
+  "name": "tenantry",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Chrome-Erweiterung (MV3) zur parallelen Nutzung mehrerer Microsoft-365-Tenants in isolierten Containern",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "node scripts/build.mjs --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "check": "npm run typecheck && npm test && npm run build",
+    "e2e": "npm run build && node e2e/run.mjs",
+    "version": "node scripts/sync-version.mjs && git add static/manifest.json CHANGELOG.md",
+    "release:patch": "npm version patch -m \"Release v%s\"",
+    "release:minor": "npm version minor -m \"Release v%s\"",
+    "release:major": "npm version major -m \"Release v%s\"",
+    "package": "npm run build && cd dist && zip -qr ../tenantry-$npm_package_version.zip . && echo tenantry-$npm_package_version.zip"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.3.7",
+    "esbuild": "^0.25.12",
+    "typescript": "~5.9.3",
+    "vitest": "^3.2.7"
+  }
+}

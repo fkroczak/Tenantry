@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <title>Tenantry</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Tenantry</h1>
+      <span class="sub">M365-Container</span>
+      <span id="version" class="version"></span>
+    </header>
+
+    <section id="current" class="card" aria-live="polite"></section>
+
+    <section>
+      <div class="row between">
+        <h2>Container</h2>
+        <label class="start">
+          Startseite
+          <select id="startPage"></select>
+        </label>
+      </div>
+      <ul id="list"></ul>
+    </section>
+
+    <section>
+      <h2>Neuer Container</h2>
+      <form id="create" class="row">
+        <input id="newName" type="text" placeholder="z. B. Kunde Contoso" maxlength="40" required />
+        <div id="newColor" class="swatches" role="radiogroup" aria-label="Farbe"></div>
+        <button type="submit" class="primary">Anlegen</button>
+      </form>
+    </section>
+
+    <details>
+      <summary>Erweitert</summary>
+      <label class="check">
+        <input id="externalIdp" type="checkbox" />
+        Anmeldung über externe IdPs erlauben (ADFS, Okta, …)
+      </label>
+      <p class="hint">
+        Fordert Zugriff auf alle https-Seiten an. Nötig, wenn der Login von einer Domain außerhalb von Microsoft
+        zurück zu login.microsoftonline.com springt.
+      </p>
+      <button id="clearSw" type="button">Service Worker der M365-Seiten entfernen</button>
+      <p class="hint">Hilft, wenn eine Seite in einem Container dauerhaft die falsche Sitzung zeigt.</p>
+    </details>
+
+    <p id="error" class="error" role="alert" hidden></p>
+    <script src="popup.js"></script>
+  </body>
+</html>
