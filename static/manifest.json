@@ -1,0 +1,96 @@
+{
+  "manifest_version": 3,
+  "name": "Tenantry",
+  "version": "0.1.0",
+  "description": "Mehrere Microsoft-365-Tenants parallel in isolierten Containern (Tab-Gruppen) nutzen.",
+  "minimum_chrome_version": "121",
+  "incognito": "not_allowed",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "Tenantry",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "permissions": [
+    "storage",
+    "tabs",
+    "tabGroups",
+    "webRequest",
+    "webNavigation",
+    "declarativeNetRequest",
+    "cookies",
+    "alarms",
+    "browsingData"
+  ],
+  "host_permissions": [
+    "https://login.microsoftonline.com/*",
+    "https://login.live.com/*",
+    "https://*.office.com/*",
+    "https://*.microsoft.com/*",
+    "https://*.sharepoint.com/*",
+    "https://*.portal.azure.com/*",
+    "https://*.cloud.microsoft/*",
+    "https://*.office365.com/*",
+    "https://login.windows.net/*",
+    "https://microsoftonline.com/*",
+    "https://live.com/*",
+    "https://windows.net/*"
+  ],
+  "optional_host_permissions": [
+    "https://*/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://login.microsoftonline.com/*",
+        "https://login.live.com/*",
+        "https://*.office.com/*",
+        "https://*.microsoft.com/*",
+        "https://*.sharepoint.com/*",
+        "https://*.portal.azure.com/*",
+        "https://*.cloud.microsoft/*",
+        "https://*.office365.com/*",
+        "https://login.windows.net/*"
+      ],
+      "js": [
+        "content-bridge.js"
+      ],
+      "run_at": "document_start",
+      "all_frames": true,
+      "match_about_blank": true,
+      "world": "ISOLATED"
+    },
+    {
+      "matches": [
+        "https://login.microsoftonline.com/*",
+        "https://login.live.com/*",
+        "https://*.office.com/*",
+        "https://*.microsoft.com/*",
+        "https://*.sharepoint.com/*",
+        "https://*.portal.azure.com/*",
+        "https://*.cloud.microsoft/*",
+        "https://*.office365.com/*",
+        "https://login.windows.net/*"
+      ],
+      "js": [
+        "content-main.js"
+      ],
+      "run_at": "document_start",
+      "all_frames": true,
+      "match_about_blank": true,
+      "world": "MAIN"
+    }
+  ]
+}
