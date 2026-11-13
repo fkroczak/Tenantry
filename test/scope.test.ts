@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import manifest from '../static/manifest.json';
+import pkg from '../package.json';
 import { decodePayload, encodePayload, MAX_PAYLOAD_CHARS } from '../src/shared/payload';
 import { COOKIE_APEX_PERMISSIONS, inScope, SCOPE_MATCH_PATTERNS, siteOf } from '../src/shared/scope';
 
@@ -43,5 +44,12 @@ describe('Payload', () => {
     const enc = encodePayload({ v: 1, c: 'cX', k: big });
     expect(enc.length).toBeLessThan(MAX_PAYLOAD_CHARS);
     expect(decodePayload(enc)).toEqual({ v: 1, c: 'cX' });
+  });
+});
+
+describe('Versionierung', () => {
+  it('Manifest-Version entspricht package.json und hat das Format MAJOR.MINOR.PATCH', () => {
+    expect(manifest.version).toBe(pkg.version);
+    expect(pkg.version).toMatch(/^\d+\.\d+\.\d+$/);
   });
 });

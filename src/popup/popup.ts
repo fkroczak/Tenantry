@@ -187,6 +187,7 @@ function editRow(c: Container): HTMLLIElement {
 }
 
 async function init(): Promise<void> {
+  $('version').textContent = 'v' + chrome.runtime.getManifest().version;
   const sel = $('startPage') as HTMLSelectElement;
   for (const p of START_PAGES) sel.append(h('option', { value: p.url }, p.label));
   const stored = (await chrome.storage.local.get(START_KEY))[START_KEY];

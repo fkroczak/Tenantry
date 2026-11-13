@@ -79,6 +79,32 @@ Voraussetzung: zwei Konten aus **verschiedenen** Tenants, z. B. `admin@contoso.o
 * `npm test`: Cookie-Parser (RFC 6265, Präfixe, Max-Age), Regel-Generator (Host-only vs. Domain, SameSite, Catch-all, Server-Timing-Payload) und die Konsistenz zwischen Scope und Manifest.
 * `npm run e2e`: Startet Chromium mit der Erweiterung und leitet die Microsoft-Hostnamen per `--host-resolver-rules` auf einen lokalen HTTPS-Testserver um. Geprüft werden zwei Container mit Logins inkl. 302-Set-Cookie, Cookie-Header, `fetch`, `document.cookie` (lesen/schreiben, HttpOnly verborgen), localStorage/sessionStorage/IndexedDB, ein Tab ohne Container, `window.open`, `target=_blank`, Tab-Gruppen sowie Umbenennen und Löschen. Benötigt `playwright` (global oder `npm i -D playwright`) und `openssl`. Ersetzt **nicht** den Test mit echten Tenants.
 
+## Versionierung
+
+Tenantry nutzt [Semantic Versioning](https://semver.org/lang/de/) im Format **`MAJOR.MINOR.PATCH`** (z. B. `0.1.0`):
+
+| Teil | Wann erhöhen | Beispiel |
+|---|---|---|
+| `PATCH` | Fehlerbehebungen ohne neue Funktionen | `0.1.0` → `0.1.1` |
+| `MINOR` | neue Funktionen, abwärtskompatibel | `0.1.1` → `0.2.0` |
+| `MAJOR` | inkompatible Änderungen (z. B. gespeicherte Container müssen migriert werden) | `0.9.0` → `1.0.0` |
+
+Solange die Version mit `0.` beginnt, ist Tenantry ein Prototyp. `1.0.0` markiert den ersten stabilen Stand.
+
+* **Einzige Quelle** ist `package.json`. `static/manifest.json` wird automatisch angeglichen; ein Test prüft die Übereinstimmung.
+* Die aktuelle Version steht im Popup oben rechts und in `chrome://extensions`.
+* Änderungen werden in [CHANGELOG.md](CHANGELOG.md) unter **„Unreleased“** gesammelt.
+
+**Release erstellen** (auf einem sauberen Arbeitsstand):
+
+```bash
+npm run release:patch     # oder release:minor / release:major
+git push --follow-tags    # Commit + Tag vX.Y.Z hochladen
+npm run package           # erzeugt tenantry-X.Y.Z.zip zum Verteilen
+```
+
+`npm version` erhöht die Nummer, überträgt sie ins Manifest, macht im CHANGELOG aus „Unreleased“ einen datierten Abschnitt und erstellt Commit und Git-Tag `vX.Y.Z`.
+
 ## Datenschutz
 
 Tenantry sendet keinerlei Daten nach außen und enthält keine Analyse- oder Tracking-Funktionen. Container-Cookies liegen in `chrome.storage.local` (persistente Cookies) bzw. `chrome.storage.session` (Session-Cookies) des Chrome-Profils, **unverschlüsselt**. Die Erweiterung sollte daher nur auf vertrauenswürdigen Geräten genutzt werden.

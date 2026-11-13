@@ -62,3 +62,4 @@ summary { cursor: pointer; color: var(--muted); }
 .hint { color: var(--muted); font-size: 11px; margin: 2px 0 8px; }
 .error { color: var(--danger); margin: 8px 0 0; }
 .edit { flex-wrap: wrap; }
+.version { margin-left: auto; color: var(--muted); font-size: 11px; }
