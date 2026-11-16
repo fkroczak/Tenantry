@@ -1,8 +1,9 @@
 {
   "manifest_version": 3,
   "name": "Tenantry",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Mehrere Microsoft-365-Tenants parallel in isolierten Containern (Tab-Gruppen) nutzen.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmlJetFTwi5Mhx6LIPxyC+Yh8TeAcv0l/g4UzdZnkGy/xjaLdJdLBeRhKA4QzHoJofnM7Ux1hnftSG6NW+XnwYLLpz3zemQqgu5+N/sQYXWyolt5/Ih0cGMttF+nYHoSsgVmZLCbqtbDs3il83fnRSNTqnPDuz7gLSeSOuJm9Rip9MhQzc0eJyRM784av6CtozKn+uwDw9ffw9HVH86sUuAN6OygaJ3UBPl/pJF1C31bqa7I/b7cx5WIGTY+7hJsGNeqlW5vbDuQyPmS80fa+0WAg6E4vZBIA/5xhcxIWTrCMOFHVdXuscn+jqGNwVTF4wtd4xmb5m+T72SBSK/Zi7QIDAQAB",
   "minimum_chrome_version": "121",
   "incognito": "not_allowed",
   "icons": {

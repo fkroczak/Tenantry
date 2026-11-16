@@ -52,6 +52,7 @@ const ctx = await chromium.launchPersistentContext(join(work, 'profile'), {
 try {
   const sw = ctx.serviceWorkers()[0] ?? (await ctx.waitForEvent('serviceworker'));
   const extId = new URL(sw.url()).host;
+  check('Feste Erweiterungs-ID aus manifest.key', extId === 'lilkabchipnpplblekhiknflngomlmpk', extId);
   await sleep(500);
 
   const ext = await ctx.newPage();
