@@ -6,6 +6,8 @@ die Versionsnummern folgen [Semantic Versioning](https://semver.org/lang/de/) (`
 
 ## [Unreleased]
 
+## [0.3.0] – 2026-11-16
+
 ### Geändert
 - Feste Erweiterungs-ID `lilkabchipnpplblekhiknflngomlmpk` über `key` im Manifest. Container und Anmeldungen bleiben erhalten, auch wenn die entpackte Erweiterung aus einem anderen Ordner geladen wird. Einmalig beim Umstieg sind die Container leer, weil sich die ID ändert.
 - Neues Logo: drei Kacheln in Microsoft-Farben und ein „+“ für einen neuen Tenant. Quelle `static/icons/icon.svg`, PNGs per `scripts/render-icons.mjs`.
@@ -32,7 +34,8 @@ Erster Prototyp (Phase 1).
 - Popup: Container-Liste, „+ Tab“ mit wählbarer Startseite, aktueller Container, „In Container öffnen“, Optionen für externe IdPs und Service-Worker-Bereinigung.
 - Build mit esbuild, Unit-Tests (vitest), End-to-End-Test mit Chromium.
 
-[Unreleased]: https://github.com/fkroczak/Tenantry/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/fkroczak/Tenantry/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/fkroczak/Tenantry/releases/tag/v0.3.0
 [0.2.0]: https://github.com/fkroczak/Tenantry/releases/tag/v0.2.0
 [0.1.1]: https://github.com/fkroczak/Tenantry/releases/tag/v0.1.1
 [0.1.0]: https://github.com/fkroczak/Tenantry/releases/tag/v0.1.0
