@@ -206,6 +206,38 @@ try {
   const cChild = await child.textContent('#cookie').catch(() => '');
   check('Neuer Tab (target=_blank) erbt Container B', cChild.trim() === 'OpenIdConnect.token=bob-oidc', cChild);
 
+  // 7b) Leere neue Tabs erben keinen Container, Drag & Drop in die Gruppe schon
+  const tabInfo = (t) =>
+    sw.evaluate(async (id) => {
+      const tab = await chrome.tabs.get(id);
+      return { groupId: tab.groupId, badge: await chrome.action.getBadgeText({ tabId: id }) };
+    }, t);
+  const groupA = (await tabInfo(tabA)).groupId;
+  // Strg+T aus einem Container-Tab (Opener gesetzt, Ziel: neue-Tab-Seite)
+  const newTab = await sw.evaluate(async (o) => {
+    const { windowId } = await chrome.tabs.get(o);
+    return (await chrome.tabs.create({ windowId, openerTabId: o, url: 'chrome://newtab/' })).id;
+  }, tabA);
+  // Chrome setzt einen neuen Tab neben einem gruppierten Tab selbst in die Gruppe
+  const autoTab = await sw.evaluate(async (g) => {
+    const { windowId } = await chrome.tabGroups.get(g);
+    const t = await chrome.tabs.create({ windowId, url: 'chrome://newtab/' });
+    await chrome.tabs.group({ tabIds: [t.id], groupId: g });
+    return t.id;
+  }, groupA);
+  await sleep(1500);
+  const iNew = await tabInfo(newTab);
+  const iAuto = await tabInfo(autoTab);
+  check('Strg+T aus Container-Tab: kein Container', iNew.badge === '' && iNew.groupId === -1, JSON.stringify(iNew));
+  check('Von Chrome gruppierter neuer Tab: wieder ohne Gruppe/Container', iAuto.badge === '' && iAuto.groupId === -1, JSON.stringify(iAuto));
+  // Drag & Drop eines bestehenden Tabs in die Gruppe bleibt möglich
+  await sleep(1000);
+  await sw.evaluate(([t, g]) => chrome.tabs.group({ tabIds: [t], groupId: g }), [newTab, groupA]);
+  await sleep(1000);
+  const iDrag = await tabInfo(newTab);
+  check('Tab in Gruppe gezogen: wechselt in Container', iDrag.badge === 'TE' && iDrag.groupId === groupA, JSON.stringify(iDrag));
+  await sw.evaluate((ids) => chrome.tabs.remove(ids), [newTab, autoTab]);
+
   // 8) Tab-Gruppen
   const groups = await sw.evaluate(() => chrome.tabGroups.query({}).then((g) => g.map((x) => `${x.title}:${x.color}`)));
   check('Tab-Gruppen mit Name/Farbe', groups.includes('Tenant A:blue') && groups.includes('Tenant B:orange'), groups.join());

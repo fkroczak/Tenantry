@@ -5,7 +5,7 @@ Chrome-Erweiterung (Manifest V3), mit der sich **mehrere Microsoft-365-Tenants g
 * Jeder Container wird als **Chrome-Tab-Gruppe** mit eigenem Namen und eigener Farbe dargestellt.
 * Container haben **eigene Cookies**: Set-Cookie wird abgefangen, ausgehende Requests erhalten per declarativeNetRequest die Cookies des Containers (HttpOnly/Secure inklusive).
 * **localStorage, sessionStorage, IndexedDB** u. a. sind pro Container getrennt, was für MSAL-Tokens wichtig ist.
-* Neue Tabs, Popups (`window.open`) und Redirects **erben** den Container.
+* Links, die eine Container-Seite in einem neuen Tab öffnet, Popups (`window.open`) und Redirects **erben** den Container. Leere neue Tabs (Strg+T, „+“, Lesezeichen, eingetippte Adressen) bleiben ohne Container, auch wenn Chrome sie neben einem gruppierten Tab einsortiert. Weitere Container-Tabs entstehen über „+ Tab“ im Popup oder indem man einen Tab in die Gruppe zieht.
 * Keine Tracker, keine externen Server. Alle Daten bleiben lokal in `chrome.storage`.
 
 > Status: Prototyp (Phase 1). Architektur und bekannte Grenzen stehen in [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md).
