@@ -1,13 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
-  <!-- Tenantry: drei gestapelte Tabs (Container) mit Fluent-artigen Verläufen. Eigenes Motiv, kein Microsoft-Logo. -->
-  <defs>
-    <linearGradient id="back" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#B04BE0"/><stop offset="1" stop-color="#E8508A"/></linearGradient>
-    <linearGradient id="mid" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#14B8A6"/><stop offset="1" stop-color="#5CC93A"/></linearGradient>
-    <linearGradient id="front" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2BA6F5"/><stop offset="1" stop-color="#1D4ED8"/></linearGradient>
-    <filter id="sh" x="-10%" y="-10%" width="120%" height="125%"><feDropShadow dx="0" dy="1.5" stdDeviation="1.5" flood-color="#0B1A40" flood-opacity="0.35"/></filter>
-  </defs>
-  <path fill="url(#back)" d="M44 2h22a8 8 0 0 1 8 8v8h38a12 12 0 0 1 12 12v42a12 12 0 0 1-12 12H48a12 12 0 0 1-12-12V10a8 8 0 0 1 8-8z"/>
-  <path filter="url(#sh)" fill="url(#mid)" d="M28 23h22a8 8 0 0 1 8 8v8h38a12 12 0 0 1 12 12v42a12 12 0 0 1-12 12H32a12 12 0 0 1-12-12V31a8 8 0 0 1 8-8z"/>
-  <path filter="url(#sh)" fill="url(#front)" d="M12 44h22a8 8 0 0 1 8 8v8h38a12 12 0 0 1 12 12v42a12 12 0 0 1-12 12H16a12 12 0 0 1-12-12V52a8 8 0 0 1 8-8z"/>
-  <path d="M14 72h68" stroke="#FFFFFF" stroke-opacity="0.4" stroke-width="5" stroke-linecap="round"/>
-</svg>
+  <!-- Tenantry: drei Kacheln + „+“ für einen neuen Tenant (an Microsoft-Farben angelehnt, kein Microsoft-Logo) --><defs>
+<linearGradient id="f1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1B6FE0"/><stop offset="1" stop-color="#36C3F5"/></linearGradient><linearGradient id="f2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7C4DFF"/><stop offset="1" stop-color="#E5489E"/></linearGradient><linearGradient id="f3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F5A623"/><stop offset="1" stop-color="#F2552C"/></linearGradient><linearGradient id="f4" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#13B5A6"/><stop offset="1" stop-color="#6CCB3C"/></linearGradient>
+<linearGradient id="m365" x1="0" y1="0" x2="1" y2="0.6"><stop offset="0" stop-color="#2F80ED"/><stop offset="0.3333333333333333" stop-color="#7C4DFF"/><stop offset="0.6666666666666666" stop-color="#E5489E"/><stop offset="1" stop-color="#F59E0B"/></linearGradient><linearGradient id="dark" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1F2A44"/><stop offset="1" stop-color="#0E1526"/></linearGradient>
+<filter id="s" x="-15%" y="-15%" width="130%" height="135%"><feDropShadow dx="0" dy="1.5" stdDeviation="1.5" flood-color="#0B1A40" flood-opacity=".35"/></filter></defs><rect x="8" y="8" width="54" height="54" rx="10" fill="#F25022"/><rect x="66" y="8" width="54" height="54" rx="10" fill="#7FBA00"/><rect x="8" y="66" width="54" height="54" rx="10" fill="#00A4EF"/><rect x="66" y="66" width="54" height="54" rx="10" fill="none" stroke="#FFB900" stroke-width="7"/><path d="M93 79v28M79 93h28" stroke="#FFB900" stroke-width="8" stroke-linecap="round"/></svg>
