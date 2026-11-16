@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Tenantry",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Mehrere Microsoft-365-Tenants parallel in isolierten Containern (Tab-Gruppen) nutzen.",
   "minimum_chrome_version": "121",
   "incognito": "not_allowed",
