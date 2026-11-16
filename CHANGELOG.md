@@ -6,6 +6,9 @@ die Versionsnummern folgen [Semantic Versioning](https://semver.org/lang/de/) (`
 
 ## [Unreleased]
 
+### Geändert
+- Leere neue Tabs (Strg+T, „+“, Lesezeichen, eingetippte Adressen) landen nicht mehr im Container. Setzt Chrome einen neuen Tab von selbst in eine Container-Gruppe, nimmt Tenantry ihn wieder heraus. Container-Tabs entstehen nur noch über „+ Tab“/„In Container öffnen“ im Popup, über Links und Popups einer Container-Seite oder per Drag & Drop in die Gruppe.
+
 ## [0.1.1] – 2026-11-16
 
 ### Behoben

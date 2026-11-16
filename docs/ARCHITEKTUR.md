@@ -50,7 +50,8 @@
 ### 1. Container ↔ Tab
 * Zuordnung `tabId → containerId` in `chrome.storage.session` (überlebt das Schlafen des Service Workers).
 * Jeder Container wird pro Fenster als **Tab-Gruppe** mit seinem Namen und seiner Farbe dargestellt.
-* **Vererbung:** `tabs.onCreated` (openerTabId) und `webNavigation.onCreatedNavigationTarget` (window.open, `target=_blank`). Redirects bleiben im selben Tab und damit im Container.
+* **Vererbung:** `webNavigation.onCreatedNavigationTarget` (window.open, `target=_blank`, Strg-/Mittelklick auf Links) sowie `tabs.onCreated`, wenn der Opener ein Container-Tab ist **und** das Ziel (`pendingUrl`) im Scope liegt. Redirects bleiben im selben Tab und damit im Container.
+* **Leere neue Tabs** (Strg+T, „+“, Lesezeichen, Omnibox) erben nichts. Setzt Chrome einen solchen Tab innerhalb von 2 s nach dem Erstellen selbst in eine Container-Gruppe, nimmt Tenantry ihn wieder heraus (`freshTabs` in `index.ts`). Später in die Gruppe gezogene Tabs wechseln weiterhin in den Container.
 * Zieht der Benutzer einen Tab in die Gruppe eines anderen Containers, wechselt der Tab den Container und wird neu geladen. Ein Tab, der aus seiner Gruppe entfernt wird, wird wieder einsortiert (Container sind pro Tab fest).
 * **Neustart:** Tab- und Gruppen-IDs sind nach einem Browser-Neustart neu. Die Zuordnung wird über den **Titel der Tab-Gruppe** wiederhergestellt; betroffene Tabs werden einmal neu geladen.
 

@@ -86,6 +86,7 @@ async function boot(): Promise<void> {
 // ---------------------------------------------------------------------------
 
 async function assignTab(tabId: number, cid: string | null, opts: { reload?: boolean } = {}): Promise<void> {
+  if (cid) freshTabs.delete(tabId);
   if (cid) state.tabs.set(tabId, cid);
   else state.tabs.delete(tabId);
   await saveTabs();
@@ -134,16 +135,40 @@ async function openInContainer(cid: string, url: string, base?: chrome.tabs.Tab)
 // Vererbung: neue Tabs / Popups / window.open
 // ---------------------------------------------------------------------------
 
+/**
+ * Neue Tabs ohne Container (Strg+T, „+“, Lesezeichen, Omnibox) mit
+ * Erstellzeitpunkt. Setzt Chrome so einen Tab von selbst in eine
+ * Container-Gruppe (z. B. Strg+T neben einem gruppierten Tab), wird er wieder
+ * herausgenommen statt dem Container zugeordnet. Container-Tabs entstehen nur
+ * über das Popup, über Links/Popups einer Container-Seite oder per Drag & Drop.
+ */
+const freshTabs = new Map<number, number>();
+const FRESH_MS = 2000;
+
+function isFresh(tabId: number, now = Date.now()): boolean {
+  const t = freshTabs.get(tabId);
+  return t !== undefined && now - t < FRESH_MS;
+}
+
 chrome.tabs.onCreated.addListener((tab) => {
+  const createdAt = Date.now();
   void ready.then(async () => {
-    if (tab.id === undefined || tab.openerTabId === undefined || state.tabs.has(tab.id)) return;
-    const cid = state.tabs.get(tab.openerTabId);
-    if (cid) await assignTab(tab.id, cid);
+    if (tab.id === undefined || state.tabs.has(tab.id)) return;
+    const cid = tab.openerTabId !== undefined ? state.tabs.get(tab.openerTabId) : undefined;
+    // Nur Tabs, die eine Container-Seite per Link öffnet (Ziel ist eine
+    // M365-Adresse), erben den Container. Leere Tabs (chrome://newtab) nicht.
+    if (cid && urlInScope(tab.pendingUrl ?? tab.url)) {
+      await assignTab(tab.id, cid);
+      return;
+    }
+    freshTabs.set(tab.id, createdAt);
+    if (tab.groupId !== undefined && tab.groupId !== -1 && state.groups.has(tab.groupId)) await ungroup([tab.id]);
   });
 });
 
 chrome.webNavigation.onCreatedNavigationTarget.addListener((d) => {
   void ready.then(async () => {
+    // Link/window.open aus einer Container-Seite: Container erben.
     if (state.tabs.has(d.tabId)) return;
     const cid = state.tabs.get(d.sourceTabId);
     if (cid) await assignTab(d.tabId, cid);
@@ -152,6 +177,7 @@ chrome.webNavigation.onCreatedNavigationTarget.addListener((d) => {
 
 chrome.tabs.onRemoved.addListener((tabId) => {
   staleRetry.forget(tabId);
+  freshTabs.delete(tabId);
   void ready.then(async () => {
     if (!state.tabs.has(tabId)) return;
     state.tabs.delete(tabId);
@@ -177,6 +203,12 @@ chrome.tabs.onUpdated.addListener((tabId, info) => {
   void ready.then(async () => {
     const current = state.tabs.get(tabId) ?? null;
     const target = groupId === -1 ? null : (state.groups.get(groupId) ?? null);
+    if (target && !current && isFresh(tabId)) {
+      // Chrome hat einen neuen, leeren Tab selbst in die Gruppe gesetzt:
+      // wieder herausnehmen, kein Container.
+      await ungroup([tabId]);
+      return;
+    }
     if (target && target !== current) {
       // Benutzer hat den Tab in die Gruppe eines anderen Containers gezogen.
       const tab = await chrome.tabs.get(tabId).catch(() => null);
