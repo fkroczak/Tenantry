@@ -1,0 +1,88 @@
+# Erstellt einen GitHub-Release – aber nur, wenn ausdrücklich ein Flag gesetzt wird.
+# Normale Pushes auf main lösen KEINEN Release aus.
+#
+# Zwei Wege, das Flag zu setzen:
+#   1. Tag pushen:  npm run release:patch && git push --follow-tags   (Tag vX.Y.Z)
+#   2. Manuell:     Actions → Release → „Run workflow“ → Haken „release“ setzen.
+#                   Veröffentlicht die Version aus package.json auf dem aktuellen main
+#                   und legt den Tag vX.Y.Z dabei selbst an.
+name: Release
+
+on:
+  push:
+    tags: ['v*.*.*']
+  workflow_dispatch:
+    inputs:
+      release:
+        description: 'Aktuelle Version von main veröffentlichen (Flag)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.event_name == 'push' || inputs.release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Manuell immer main releasen, egal von welchem Branch gestartet.
+          ref: ${{ github.event_name == 'workflow_dispatch' && 'main' || github.ref }}
+          fetch-depth: 0
+
+      - name: Version und Herkunft prüfen
+        id: meta
+        run: |
+          version=$(node -p "require('./package.json').version")
+          tag="v$version"
+          if [ "$GITHUB_EVENT_NAME" = "push" ] && [ "$GITHUB_REF_NAME" != "$tag" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME passt nicht zur package.json-Version $version"; exit 1
+          fi
+          git fetch -q origin main
+          if ! git merge-base --is-ancestor HEAD origin/main; then
+            echo "::error::Commit $(git rev-parse --short HEAD) ist nicht auf main – Release abgebrochen"; exit 1
+          fi
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "::error::Release $tag existiert bereits"; exit 1
+          fi
+          if ! grep -q "^## \[$version\]" CHANGELOG.md; then
+            echo "::error::CHANGELOG.md hat keinen Abschnitt [$version]"; exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm run check
+      - run: npm run package
+
+      - name: Release-Notizen aus CHANGELOG
+        run: |
+          awk -v v="${{ steps.meta.outputs.version }}" '
+            index($0, "## [" v "]") == 1 { on = 1; next }
+            on && (/^## \[/ || /^\[[^]]+\]: /) { exit }
+            on { print }
+          ' CHANGELOG.md > notes.md
+          cat notes.md
+
+      - name: GitHub-Release anlegen
+        run: |
+          gh release create "${{ steps.meta.outputs.tag }}" \
+            "tenantry-${{ steps.meta.outputs.version }}.zip" \
+            --title "${{ steps.meta.outputs.tag }}" \
+            --notes-file notes.md \
+            --target "$(git rev-parse HEAD)"
+        env:
+          GH_TOKEN: ${{ github.token }}

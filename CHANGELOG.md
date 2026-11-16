@@ -6,6 +6,9 @@ die Versionsnummern folgen [Semantic Versioning](https://semver.org/lang/de/) (`
 
 ## [Unreleased]
 
+### Hinzugefügt
+- Release-Workflow (GitHub Actions): veröffentlicht nur per Tag `vX.Y.Z` oder manuell mit gesetztem Flag „release“, inkl. ZIP und CHANGELOG-Notizen.
+
 ## [0.1.0] – 2026-11-13
 
 Erster Prototyp (Phase 1).
