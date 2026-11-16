@@ -37,6 +37,7 @@
 | `src/shared/payload.ts` | Kodierung des Kontexts für den `Server-Timing`-Header |
 | `src/shared/types.ts` | Container-Modell, Farben, Nachrichtentypen |
 | `src/background/*` | Service Worker (siehe Diagramm) |
+| `src/background/stale.ts` | Erkennt Navigationen mit veralteten Cookies (Redirect-Race) |
 | `src/content/main.ts` | Isolierung in der Seite (MAIN-World) |
 | `src/content/bridge.ts` | Vermittler Seite ↔ Service Worker (ISOLATED-World) |
 | `src/popup/*` | Popup-UI (ohne Framework) |
@@ -81,7 +82,7 @@
 | Thema | Grenze | Umgang im Prototyp |
 |---|---|---|
 | **MV3 webRequest** | Kein blockierendes `webRequest`: Set-Cookie lässt sich nicht verhindern, nur beobachten. Header-Änderungen nur deklarativ (DNR). | Natives Cookie wird nach dem Erfassen gelöscht. **Empfehlung: M365 nur in Containern nutzen.** Gleichnamige Cookies einer „normalen“ Sitzung können kurz überschrieben werden. |
-| **Timing** | Die DNR-Regeln werden asynchron aktualisiert (Millisekunden). Ein Redirect direkt nach Set-Cookie kann noch mit den alten Cookies laufen. | In Tests unkritisch. Bei Login-Schleifen den Tab einmal neu laden. |
+| **Timing** | Die DNR-Regeln werden asynchron aktualisiert (Millisekunden). Ein Redirect direkt nach Set-Cookie läuft noch mit den alten Cookies (z. B. SharePoint: `FedAuth` auf dem 302 von `/_forms/default.aspx`). | `stale.ts`: `webRequest.onSendHeaders` liefert den gesendeten Cookie-Header. Fehlen bei einer GET-Seitennavigation Container-Cookies, die zum Sendezeitpunkt bekannt waren, wird sie nach dem Aktualisieren der Regeln wiederholt (max. 3× pro 30 s und Tab). POST-Navigationen und Subrequests werden nicht wiederholt. |
 | **Initiator-Berechtigung** | DNR `modifyHeaders` verlangt Host-Rechte für Ziel **und** Initiator. Föderierte Logins (ADFS, Okta, PingFederate …) springen von fremden Domains zurück. | Optionale Berechtigung „Externe IdPs erlauben“ im Popup (`https://*/*`). |
 | **Service Worker der Seiten** | Requests eines Service Workers haben `tabId = -1` und lassen sich keinem Tab und damit keinem Container zuordnen. | In Containern wird die Registrierung blockiert, vorhandene SWs werden abgemeldet. Popup-Button entfernt SWs/Caches der M365-Origins. Offline-Funktionen von Outlook entfallen in Containern. |
 | **IndexedDB / Cache Storage** | Pro Origin geteilt, nicht pro Container. | Namenspräfix je Container (best effort). Daten gelöschter Container bleiben in der Origin liegen. |

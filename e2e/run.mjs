@@ -25,7 +25,7 @@ const PORT = 8443;
 execFileSync('openssl', [
   'req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-days', '2', '-subj', '/CN=tenantry-e2e',
   '-keyout', join(work, 'key.pem'), '-out', join(work, 'cert.pem'),
-  '-addext', 'subjectAltName=DNS:*.microsoftonline.com,DNS:login.microsoftonline.com,DNS:*.office.com,DNS:*.microsoft.com',
+  '-addext', 'subjectAltName=DNS:*.microsoftonline.com,DNS:login.microsoftonline.com,DNS:*.office.com,DNS:*.microsoft.com,DNS:*.sharepoint.com',
 ], { stdio: 'ignore' });
 const server = await startServer({ key: readFileSync(join(work, 'key.pem')), cert: readFileSync(join(work, 'cert.pem')), port: PORT });
 
@@ -83,9 +83,18 @@ try {
   const pB = await pageOf(tabB);
   await sleep(500);
 
+  // Navigation, die Tenantry evtl. wiederholt (veraltete Cookies nach einem 302):
+  // Playwright meldet die abgebrochene erste Navigation als ERR_ABORTED.
+  const gotoSettled = async (p, url) => {
+    await p.goto(url).catch((e) => {
+      if (!/ERR_ABORTED|interrupted by another navigation/.test(String(e))) throw e;
+    });
+    await p.waitForLoadState('load');
+  };
+
   // Redirect mit Set-Cookie auf dem 302
-  await pA.goto('https://outlook.office.com/redirect?user=alice');
-  await pB.goto('https://outlook.office.com/redirect?user=bob');
+  await gotoSettled(pA, 'https://outlook.office.com/redirect?user=alice');
+  await gotoSettled(pB, 'https://outlook.office.com/redirect?user=bob');
   await sleep(500);
 
   // 1) Server sieht pro Container nur die eigenen Cookies
@@ -103,6 +112,21 @@ try {
   const oB = await pB.textContent('#cookie');
   check('Domain-Cookie aus 302 (A) bei outlook.office.com', oA.trim() === 'OpenIdConnect.token=alice-oidc', oA);
   check('Domain-Cookie aus 302 (B) bei outlook.office.com', oB.trim() === 'OpenIdConnect.token=bob-oidc', oB);
+
+  // SharePoint: form_post -> 302 mit FedAuth -> Zielseite muss FedAuth sofort mitsenden
+  const spWait = async (p) => {
+    await p.waitForURL(/_layouts\/15\/online\/AdminHome\.aspx/, { timeout: 10_000 }).catch(() => undefined);
+    await p.waitForSelector('#sp', { timeout: 10_000 }).catch(() => undefined);
+    return (await p.textContent('#sp').catch(() => null)) ?? (await p.content());
+  };
+  await gotoSettled(pA, 'https://contoso-admin.sharepoint.com/_layouts/15/online/AdminHome.aspx');
+  const sA = await spWait(pA);
+  check('SharePoint (A): Anmeldung per form_post + 302 klappt', /SP-OK alice-fedauth/.test(sA), sA);
+  await gotoSettled(pB, 'https://fabrikam-admin.sharepoint.com/_layouts/15/online/AdminHome.aspx');
+  const sB = await spWait(pB);
+  check('SharePoint (B): Anmeldung per form_post + 302 klappt', /SP-OK bob-fedauth/.test(sB), sB);
+  await pA.goto('https://outlook.office.com/owa');
+  await pB.goto('https://outlook.office.com/owa');
 
   // 2) fetch/XHR aus der Seite
   const fA = await pA.evaluate(() => fetch('/api/whoami', { credentials: 'include' }).then((r) => r.json()));
@@ -152,7 +176,7 @@ try {
   const lPlain = await plain.evaluate(() => localStorage.getItem('msal.token'));
   check('Tab ohne Container: kein Container-localStorage', lPlain === null, String(lPlain));
   const native = await sw.evaluate(() => chrome.cookies.getAll({}).then((l) => l.map((c) => `${c.name}@${c.domain}`)));
-  check('Nativer Cookie-Speicher frei von Container-Cookies', !native.some((n) => /ESTSAUTH|buid|OpenIdConnect/.test(n)), native.join());
+  check('Nativer Cookie-Speicher frei von Container-Cookies', !native.some((n) => /ESTSAUTH|buid|OpenIdConnect|FedAuth|rtFa/.test(n)), native.join());
 
   // 6) window.open erbt den Container
   const [popup] = await Promise.all([
