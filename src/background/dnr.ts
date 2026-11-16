@@ -48,6 +48,11 @@ export function syncTabs(tabIds: Iterable<number>): Promise<void> {
   return chain;
 }
 
+/** Löst auf, sobald alle bisher angestoßenen Regel-Aktualisierungen aktiv sind. */
+export function whenSynced(): Promise<void> {
+  return chain;
+}
+
 function allocId(): number {
   if (nextId > 2_000_000_000) nextId = 1;
   const used = new Set([...tabRuleIds.values()].flat());

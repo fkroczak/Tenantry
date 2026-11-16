@@ -18,7 +18,7 @@ import {
   type Result,
 } from '../shared/types';
 import { extractSetCookies, onNativeCookieChanged, parseResponseCookies, scrubNative } from './capture';
-import { hasRules, initDnr, syncTabs } from './dnr';
+import { hasRules, initDnr, syncTabs, whenSynced } from './dnr';
 import { ensureGrouped, enforceGroupLook, recoverFromGroups, refreshGroups, ungroup } from './groups';
 import { applyCookies, deleteJar, flush, listCookies, loadJars, purgeExpired } from './jar';
 import {
@@ -34,6 +34,7 @@ import {
   tabsOf,
   validateName,
 } from './state';
+import { missingCookies, RetryLimiter } from './stale';
 import { log, randomId, warn } from './util';
 
 const EXTERNAL_IDP_ORIGINS = ['https://*/*'];
@@ -150,6 +151,7 @@ chrome.webNavigation.onCreatedNavigationTarget.addListener((d) => {
 });
 
 chrome.tabs.onRemoved.addListener((tabId) => {
+  staleRetry.forget(tabId);
   void ready.then(async () => {
     if (!state.tabs.has(tabId)) return;
     state.tabs.delete(tabId);
@@ -217,6 +219,38 @@ chrome.webRequest.onHeadersReceived.addListener(
   },
   { urls: [...SCOPE_MATCH_PATTERNS] },
   ['responseHeaders', 'extraHeaders'],
+);
+
+/**
+ * Navigation mit veralteten Cookies wiederholen (siehe stale.ts). Typischer
+ * Fall: SharePoint setzt FedAuth auf einem 302 und leitet sofort weiter,
+ * bevor die DNR-Regeln das neue Cookie enthalten.
+ */
+const staleRetry = new RetryLimiter();
+
+chrome.webRequest.onSendHeaders.addListener(
+  (details) => {
+    if (details.tabId < 0 || details.frameId !== 0 || details.method !== 'GET') return;
+    const sent = details.requestHeaders?.find((h) => h.name.toLowerCase() === 'cookie')?.value;
+    const sentAt = details.timeStamp;
+    void ready.then(async () => {
+      const cid = state.tabs.get(details.tabId);
+      if (!cid) return;
+      // Läuft nach den Set-Cookie-Handlern vorheriger Antworten (gleiche Reihenfolge an `ready`).
+      const missing = missingCookies(listCookies(cid), details.url, sent, sentAt);
+      if (!missing.length) return;
+      await whenSynced();
+      if (state.tabs.get(details.tabId) !== cid) return;
+      if (!staleRetry.allow(details.tabId, Date.now())) {
+        warn('Navigation mit veralteten Cookies, Wiederholungslimit erreicht', details.url, missing);
+        return;
+      }
+      log('Navigation mit veralteten Cookies wird wiederholt', details.url, missing);
+      await chrome.tabs.update(details.tabId, { url: details.url }).catch(() => undefined);
+    });
+  },
+  { urls: [...SCOPE_MATCH_PATTERNS], types: ['main_frame'] },
+  ['requestHeaders', 'extraHeaders'],
 );
 
 chrome.cookies.onChanged.addListener(onNativeCookieChanged);

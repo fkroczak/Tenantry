@@ -40,7 +40,9 @@ export function parseResponseCookies(details: chrome.webRequest.OnHeadersReceive
     return [];
   }
   if (!inScope(url.hostname)) return [];
-  const now = Date.now();
+  // Zeitpunkt der Antwort (nicht der Verarbeitung): stale.ts vergleicht ihn
+  // mit dem Sendezeitpunkt des Folge-Requests.
+  const now = Math.floor(details.timeStamp) || Date.now();
   const out: StoredCookie[] = [];
   for (const h of headers) {
     const c = parseSetCookie(h, url, now);

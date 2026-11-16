@@ -6,6 +6,11 @@ die Versionsnummern folgen [Semantic Versioning](https://semver.org/lang/de/) (`
 
 ## [Unreleased]
 
+## [0.1.1] – 2026-11-16
+
+### Behoben
+- SharePoint-Anmeldung in Containern schlug fehl („Das hat leider nicht geklappt“ auf `/_forms/default.aspx` bzw. „Eine Anmeldung ist nicht möglich“). SharePoint setzt `FedAuth`/`rtFa` auf einem 302 und leitet sofort weiter, bevor die DNR-Regeln aktualisiert sind. Tenantry vergleicht jetzt den tatsächlich gesendeten Cookie-Header jeder Seitennavigation (GET) mit dem Container und wiederholt die Navigation, wenn bereits bekannte Cookies fehlten (max. 3× pro 30 s und Tab).
+
 ## [0.1.0] – 2026-11-13
 
 Erster Prototyp (Phase 1).
@@ -18,5 +23,6 @@ Erster Prototyp (Phase 1).
 - Popup: Container-Liste, „+ Tab“ mit wählbarer Startseite, aktueller Container, „In Container öffnen“, Optionen für externe IdPs und Service-Worker-Bereinigung.
 - Build mit esbuild, Unit-Tests (vitest), End-to-End-Test mit Chromium.
 
-[Unreleased]: https://github.com/fkroczak/Tenantry/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/fkroczak/Tenantry/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/fkroczak/Tenantry/releases/tag/v0.1.1
 [0.1.0]: https://github.com/fkroczak/Tenantry/releases/tag/v0.1.0
