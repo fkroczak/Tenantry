@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Tenantry: drei gestapelte Tabs (Container) mit Fluent-artigen Verläufen. Eigenes Motiv, kein Microsoft-Logo. -->
+  <defs>
+    <linearGradient id="back" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#B04BE0"/><stop offset="1" stop-color="#E8508A"/></linearGradient>
+    <linearGradient id="mid" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#14B8A6"/><stop offset="1" stop-color="#5CC93A"/></linearGradient>
+    <linearGradient id="front" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2BA6F5"/><stop offset="1" stop-color="#1D4ED8"/></linearGradient>
+    <filter id="sh" x="-10%" y="-10%" width="120%" height="125%"><feDropShadow dx="0" dy="1.5" stdDeviation="1.5" flood-color="#0B1A40" flood-opacity="0.35"/></filter>
+  </defs>
+  <path fill="url(#back)" d="M44 2h22a8 8 0 0 1 8 8v8h38a12 12 0 0 1 12 12v42a12 12 0 0 1-12 12H48a12 12 0 0 1-12-12V10a8 8 0 0 1 8-8z"/>
+  <path filter="url(#sh)" fill="url(#mid)" d="M28 23h22a8 8 0 0 1 8 8v8h38a12 12 0 0 1 12 12v42a12 12 0 0 1-12 12H32a12 12 0 0 1-12-12V31a8 8 0 0 1 8-8z"/>
+  <path filter="url(#sh)" fill="url(#front)" d="M12 44h22a8 8 0 0 1 8 8v8h38a12 12 0 0 1 12 12v42a12 12 0 0 1-12 12H16a12 12 0 0 1-12-12V52a8 8 0 0 1 8-8z"/>
+  <path d="M14 72h68" stroke="#FFFFFF" stroke-opacity="0.4" stroke-width="5" stroke-linecap="round"/>
+</svg>

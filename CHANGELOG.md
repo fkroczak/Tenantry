@@ -6,6 +6,10 @@ die Versionsnummern folgen [Semantic Versioning](https://semver.org/lang/de/) (`
 
 ## [Unreleased]
 
+### Geändert
+- Feste Erweiterungs-ID `lilkabchipnpplblekhiknflngomlmpk` über `key` im Manifest. Container und Anmeldungen bleiben erhalten, auch wenn die entpackte Erweiterung aus einem anderen Ordner geladen wird. Einmalig beim Umstieg sind die Container leer, weil sich die ID ändert.
+- Neues Logo (gestapelte Tabs mit Farbverläufen), Quelle `static/icons/icon.svg`, PNGs per `scripts/render-icons.mjs`.
+
 ## [0.2.0] – 2026-11-16
 
 ### Geändert
