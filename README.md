@@ -51,15 +51,18 @@ Nach Code-Änderungen: neu bauen und in `chrome://extensions` auf ↻ klicken. O
 
 ## Bedienung (Popup)
 
-* **Aktueller Tab:** zeigt den Container des aktiven Tabs. Über „In Container öffnen …“ lässt sich die aktuelle Seite in einem Container neu öffnen.
-* **+ Tab:** öffnet die gewählte **Startseite** (Admin Center, Outlook, M365, Entra, Azure) in einem neuen Tab des Containers.
-* **✎:** Name und Farbe ändern (die Tab-Gruppe passt sich an).
-* **🗑:** Container löschen (zweimal klicken). Seine Tabs verlassen die Gruppe und werden ohne Container neu geladen, seine Cookies werden gelöscht.
-* **Sicherung:** Container (optional mit Anmeldungen) als Datei speichern und wiederherstellen, nach Updates suchen.
-* **Diagnose:** zeichnet den Anmeldeablauf ohne Cookie-Werte auf, zum Melden von Problemen.
-* **Erweitert:**
-  * *Externe IdPs erlauben*: nötig für föderierte Tenants (ADFS, Okta …), bei denen der Login über eine Nicht-Microsoft-Domain läuft.
-  * *Service Worker entfernen*: hilft, wenn eine M365-Seite in einem Container hartnäckig eine falsche Sitzung zeigt.
+Das Popup ist für viele Tenants (20–30 und mehr) ausgelegt:
+
+* **Kopf:** Container des aktuellen Tabs, Update-Hinweis (falls vorhanden) und Umschalter für die Darstellung (wie Windows → hell → dunkel).
+* **Suche:** Tippen filtert sofort (Treffer am Namensanfang zuerst). <kbd>↑</kbd>/<kbd>↓</kbd> wählt, <kbd>Enter</kbd> öffnet einen neuen Tab im gewählten Container, <kbd>Esc</kbd> leert die Suche, <kbd>/</kbd> springt ins Suchfeld. Gibt es keinen gleichnamigen Container, bietet die Liste „Container … anlegen“ an.
+* **Filter:** Alle · Offen (Container mit offenen Tabs) · ★ Favoriten.
+* **Liste:** oben die ★ Favoriten, darunter alle Container A–Z. Der Stern an einer Zeile heftet sie an.
+* **Aufgeklappte Zeile** (Klick auf einen Container): **+ Tab** öffnet die eingestellte Startseite, **Admin**, **Outlook** und **Entra** öffnen direkt die jeweilige App; außerdem *Aktuellen Tab hierher*, *Umbenennen / Farbe* und *Löschen* (zweimal klicken; Tabs verlassen die Gruppe, Cookies werden gelöscht).
+* **+** neben der Suche: neuen Container anlegen (eine noch freie Farbe ist vorgewählt).
+* **Unten:**
+  * *Sicherung*: Container (optional mit Anmeldungen) als Datei speichern und wiederherstellen. Ein Punkt erinnert, solange keine Sicherung existiert.
+  * *Diagnose*: zeichnet den Anmeldeablauf ohne Cookie-Werte auf, zum Melden von Problemen.
+  * *Mehr*: Startseite für „+ Tab“, Darstellung, Update-Prüfung, externe IdPs (ADFS, Okta …), Service Worker entfernen.
 
 Ein Tab, den man in die Gruppe eines anderen Containers zieht, wechselt den Container und wird neu geladen.
 

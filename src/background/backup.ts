@@ -29,7 +29,7 @@ export async function exportBackup(includeCookies: boolean): Promise<string> {
     format: BACKUP_FORMAT,
     exportedAt: new Date().toISOString(),
     version: chrome.runtime.getManifest().version,
-    containers: state.containers.map(({ id, name, color, createdAt }) => ({ id, name, color, createdAt })),
+    containers: state.containers.map(({ id, name, color, createdAt, favorite }) => ({ id, name, color, createdAt, ...(favorite ? { favorite } : {}) })),
   };
   if (includeCookies) {
     file.cookies = Object.fromEntries(state.containers.map((c) => [c.id, listCookies(c.id)]));
@@ -83,9 +83,16 @@ export function planImport(
       if (target.name !== name || target.color !== b.color) updated++;
       if (!sameName || sameName === target) target.name = name;
       target.color = b.color;
+      if (b.favorite && !target.favorite) target.favorite = true;
       idMap.set(b.id, target.id);
     } else {
-      containers.push({ id: b.id, name, color: b.color, createdAt: typeof b.createdAt === 'number' ? b.createdAt : Date.now() });
+      containers.push({
+        id: b.id,
+        name,
+        color: b.color,
+        createdAt: typeof b.createdAt === 'number' ? b.createdAt : Date.now(),
+        ...(b.favorite === true ? { favorite: true } : {}),
+      });
       idMap.set(b.id, b.id);
       added++;
     }

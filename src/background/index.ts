@@ -414,7 +414,9 @@ async function handlePopup(msg: PopupRequest): Promise<unknown> {
         if (!isValidColor(msg.color)) throw new Error('Ungültige Farbe.');
         c.color = msg.color;
       }
+      if (msg.favorite !== undefined) c.favorite = !!msg.favorite;
       await saveContainers();
+      if (msg.name === undefined && msg.color === undefined) return c;
       await refreshGroups(c.id);
       for (const t of tabsOf(c.id)) updateBadge(t);
       return c;

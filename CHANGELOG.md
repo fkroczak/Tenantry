@@ -8,6 +8,11 @@ die Versionsnummern folgen [Semantic Versioning](https://semver.org/lang/de/) (`
 
 ## [0.5.0] – 2026-11-20
 
+### Geändert
+- **Neues Popup-Design** („Graphite“), ausgelegt für 20–30 und mehr Tenants: Suche mit Rangfolge (Namensanfang zuerst) und Tastatursteuerung (↑↓, Enter, Esc, /), Filter Alle/Offen/Favoriten, angeheftete ★ Favoriten, kompakte A–Z-Liste. Ein Klick klappt einen Container auf: + Tab, Admin, Outlook, Entra direkt, Aktuellen Tab hierher, Umbenennen/Farbe, Löschen. Sicherung, Diagnose und Mehr als eigene Ansichten.
+- **Hell und dunkel** automatisch nach der Windows-Einstellung, per Knopf im Kopf (oder unter „Mehr“) überschreibbar.
+- Container lassen sich als Favorit markieren; die Markierung ist Teil der Sicherung.
+
 ### Hinzugefügt
 - **Update-Funktion:** Tenantry fragt alle paar Stunden das neueste GitHub-Release ab und zeigt neue Versionen mit „↑“ am Symbol und einem Hinweis im Popup. Werden die Dateien im Erweiterungsordner ersetzt, lädt sich Tenantry innerhalb einer Minute selbst neu (oder per „Jetzt neu laden“). Container bleiben dabei erhalten.
 - **Installer und Updater für Windows** in der ZIP: `Install-Tenantry.cmd` installiert nach `%LOCALAPPDATA%\Tenantry` und legt im Startmenü „Tenantry aktualisieren“ an. `Tenantry-Update.cmd` lädt das neueste Release in denselben Ordner.

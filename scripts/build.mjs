@@ -31,6 +31,7 @@ async function copyStatic() {
   await cp(resolve(root, 'static/manifest.json'), resolve(out, 'manifest.json'));
   await cp(resolve(root, 'src/popup/popup.html'), resolve(out, 'popup.html'));
   await cp(resolve(root, 'src/popup/popup.css'), resolve(out, 'popup.css'));
+  await cp(resolve(root, 'src/popup/theme.js'), resolve(out, 'theme.js'));
   await cp(resolve(root, 'static/icons'), resolve(out, 'icons'), { recursive: true });
   // Updater (Windows): liegt im Erweiterungsordner, siehe README „Update“.
   for (const f of ['Install-Tenantry.cmd', 'install.ps1', 'Tenantry-Update.cmd', 'update.ps1']) {

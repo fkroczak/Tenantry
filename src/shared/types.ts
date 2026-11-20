@@ -43,6 +43,8 @@ export interface Container {
   name: string;
   color: ContainerColor;
   createdAt: number;
+  /** Im Popup oben unter „Favoriten“ angeheftet. */
+  favorite?: boolean;
 }
 
 export const START_PAGES = [
@@ -64,7 +66,7 @@ export interface PopupState {
 export type PopupRequest =
   | { type: 'popup:state' }
   | { type: 'container:create'; name: string; color: ContainerColor }
-  | { type: 'container:update'; id: string; name?: string; color?: ContainerColor }
+  | { type: 'container:update'; id: string; name?: string; color?: ContainerColor; favorite?: boolean }
   | { type: 'container:delete'; id: string }
   | { type: 'container:openTab'; id: string; url: string }
   | { type: 'tab:reopenIn'; tabId: number; id: string }
