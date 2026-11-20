@@ -6,6 +6,8 @@ die Versionsnummern folgen [Semantic Versioning](https://semver.org/lang/de/) (`
 
 ## [Unreleased]
 
+## [0.4.0] – 2026-11-20
+
 ### Hinzugefügt
 - Diagnose-Aufzeichnung im Popup („Diagnose“: Starten, Stoppen, Exportieren, Leeren). Protokolliert für die M365-Domains Requests, Weiterleitungen, Status, gesendete und gesetzte Cookies (nur Namen und Prüfsumme), Formularfeld-Namen und Tenantrys eigene Schritte (Regel-Updates, Wiederholungen, Script-Cookies) und vergleicht die gesendeten Cookies mit dem Container. Cookie-Werte, Token und Formularinhalte werden nicht gespeichert. Die Aufzeichnung endet nach 30 Minuten automatisch und verfällt mit dem Browser.
 
@@ -37,7 +39,8 @@ Erster Prototyp (Phase 1).
 - Popup: Container-Liste, „+ Tab“ mit wählbarer Startseite, aktueller Container, „In Container öffnen“, Optionen für externe IdPs und Service-Worker-Bereinigung.
 - Build mit esbuild, Unit-Tests (vitest), End-to-End-Test mit Chromium.
 
-[Unreleased]: https://github.com/fkroczak/Tenantry/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/fkroczak/Tenantry/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/fkroczak/Tenantry/releases/tag/v0.4.0
 [0.3.0]: https://github.com/fkroczak/Tenantry/releases/tag/v0.3.0
 [0.2.0]: https://github.com/fkroczak/Tenantry/releases/tag/v0.2.0
 [0.1.1]: https://github.com/fkroczak/Tenantry/releases/tag/v0.1.1

@@ -1,6 +1,6 @@
 {
   "name": "tenantry",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "description": "Chrome-Erweiterung (MV3) zur parallelen Nutzung mehrerer Microsoft-365-Tenants in isolierten Containern",
   "license": "MIT",
