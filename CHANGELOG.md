@@ -6,6 +6,9 @@ die Versionsnummern folgen [Semantic Versioning](https://semver.org/lang/de/) (`
 
 ## [Unreleased]
 
+### Hinzugefügt
+- GitHub-Workflow „Release“: Liegt auf `main` eine Version ohne Release, werden Typen, Unit- und End-to-End-Tests geprüft, `tenantry-X.Y.Z.zip` gebaut und als GitHub-Release `vX.Y.Z` mit dem CHANGELOG-Abschnitt veröffentlicht.
+
 ## [0.4.0] – 2026-11-20
 
 ### Hinzugefügt

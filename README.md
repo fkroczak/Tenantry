@@ -99,11 +99,11 @@ Solange die Version mit `0.` beginnt, ist Tenantry ein Prototyp. `1.0.0` markier
 
 ```bash
 npm run release:patch     # oder release:minor / release:major
-git push --follow-tags    # Commit + Tag vX.Y.Z hochladen
-npm run package           # erzeugt tenantry-X.Y.Z.zip zum Verteilen
 ```
 
 `npm version` erhöht die Nummer, überträgt sie ins Manifest, macht im CHANGELOG aus „Unreleased“ einen datierten Abschnitt und erstellt Commit und Git-Tag `vX.Y.Z`.
+
+Sobald dieser Stand auf `main` liegt (Push oder gemergter PR), veröffentlicht der Workflow [`.github/workflows/release.yml`](.github/workflows/release.yml) automatisch das GitHub-Release: Er prüft Typen, Unit- und End-to-End-Tests, baut `tenantry-X.Y.Z.zip` und hängt es mit dem CHANGELOG-Abschnitt als Notizen an das Release `vX.Y.Z`. Existiert das Release schon, passiert nichts. Lokal lässt sich das Paket weiterhin mit `npm run package` bauen.
 
 ## Datenschutz
 

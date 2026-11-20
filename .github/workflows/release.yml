@@ -1,0 +1,88 @@
+# Veröffentlicht automatisch ein GitHub-Release, sobald auf main eine Version
+# (package.json) liegt, für die es noch kein Release gibt.
+#
+# Ablauf für ein neues Release:
+#   npm run release:patch | release:minor | release:major   (lokal)
+#   -> PR nach main mergen -> dieser Workflow prüft, baut und veröffentlicht
+#      tenantry-<version>.zip mit dem CHANGELOG-Abschnitt als Notizen.
+#
+# Manuell erneut anstoßen: Actions -> Release -> "Run workflow".
+name: Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Version ermitteln
+        id: v
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          MANIFEST=$(node -p "require('./static/manifest.json').version")
+          if [ "$VERSION" != "$MANIFEST" ]; then
+            echo "::error::package.json ($VERSION) und static/manifest.json ($MANIFEST) passen nicht zusammen"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          if gh release view "v$VERSION" >/dev/null 2>&1; then
+            echo "Release v$VERSION existiert bereits – nichts zu tun."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-node@v4
+        if: steps.v.outputs.skip == 'false'
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Abhängigkeiten
+        if: steps.v.outputs.skip == 'false'
+        run: npm ci
+
+      - name: Typecheck, Unit-Tests, Build
+        if: steps.v.outputs.skip == 'false'
+        run: npm run check
+
+      - name: End-to-End-Test (Chromium)
+        if: steps.v.outputs.skip == 'false'
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+          node e2e/run.mjs
+
+      - name: Paket und Release-Notizen
+        if: steps.v.outputs.skip == 'false'
+        run: |
+          npm run package
+          node scripts/release-notes.mjs "${{ steps.v.outputs.version }}" > release-notes.md
+          cat release-notes.md
+
+      - name: GitHub-Release veröffentlichen
+        if: steps.v.outputs.skip == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.v.outputs.version }}
+        run: |
+          gh release create "v$VERSION" "tenantry-$VERSION.zip" \
+            --title "Tenantry v$VERSION" \
+            --notes-file release-notes.md \
+            --target "$GITHUB_SHA"
