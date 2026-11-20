@@ -20,12 +20,19 @@ export interface StoredCookie {
   expires: number | null;
   /** Erstellzeitpunkt (für die Sortierung im Cookie-Header). */
   created: number;
+  /**
+   * CHIPS (`Partitioned`): Chrome führt partitionierte Cookies getrennt von
+   * gleichnamigen unpartitionierten. SharePoint löscht z. B. direkt nach dem
+   * Setzen von FedAuth die partitionierte Variante – das darf das normale
+   * FedAuth nicht treffen. Fehlt in älteren gespeicherten Cookies (= false).
+   */
+  partitioned?: boolean;
 }
 
 const MAX_AGE_MS = 400 * 24 * 60 * 60 * 1000; // Chrome-Limit: 400 Tage
 
-export function cookieKey(c: Pick<StoredCookie, 'name' | 'domain' | 'path'>): string {
-  return `${c.name}\u0000${c.domain}\u0000${c.path}`;
+export function cookieKey(c: Pick<StoredCookie, 'name' | 'domain' | 'path' | 'partitioned'>): string {
+  return `${c.name}\u0000${c.domain}\u0000${c.path}${c.partitioned ? '\u0000p' : ''}`;
 }
 
 /** RFC 6265 5.1.3 (ohne IP-Sonderfall, Scope enthält keine IPs). */
@@ -79,6 +86,7 @@ export function parseSetCookie(
   let path: string | null = null;
   let secure = false;
   let httpOnly = false;
+  let partitioned = false;
   let sameSite: SameSite = 'unspecified';
   let expires: number | null = null;
   let maxAge: number | null = null;
@@ -113,6 +121,9 @@ export function parseSetCookie(
       case 'httponly':
         httpOnly = true;
         break;
+      case 'partitioned':
+        partitioned = true;
+        break;
       case 'samesite': {
         const v = val.toLowerCase();
         sameSite = v === 'strict' || v === 'lax' || v === 'none' ? v : 'unspecified';
@@ -123,6 +134,8 @@ export function parseSetCookie(
 
   if (opts.fromScript && httpOnly) return null;
   if (secure && url.protocol !== 'https:') return null;
+  // Chrome verwirft Partitioned ohne Secure.
+  if (partitioned && !secure) return null;
 
   let domain = host;
   let hostOnly = true;
@@ -153,6 +166,7 @@ export function parseSetCookie(
     sameSite,
     expires: exp,
     created: now,
+    ...(partitioned ? { partitioned: true } : {}),
   };
 }
 

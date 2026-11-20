@@ -103,3 +103,31 @@ describe('applyCookie / serialize', () => {
     expect(serializeCookies([a, b])).toBe('b=2; a=1');
   });
 });
+
+describe('Partitioned (CHIPS)', () => {
+  const u = url('https://contoso-admin.sharepoint.com/_forms/default.aspx');
+  const set = (jar: Map<string, StoredCookie>, h: string) => applyCookie(jar, parseSetCookie(h, u, NOW)!, NOW);
+
+  it('Löschen der partitionierten Variante entfernt das normale Cookie nicht (SharePoint 2026)', () => {
+    const jar = new Map<string, StoredCookie>();
+    // Reihenfolge wie im echten 302 von /_forms/default.aspx
+    set(jar, 'FedAuth=neu; expires=Wed, 25-Nov-2026 13:16:19 GMT; path=/; SameSite=None; secure; HttpOnly');
+    set(jar, 'FedAuth=; expires=Thu, 01-Jan-1970 08:00:00 GMT; path=/; SameSite=None; Partitioned; secure; HttpOnly');
+    set(jar, 'rtFa=neu; domain=sharepoint.com; expires=Wed, 25-Nov-2026 13:16:19 GMT; path=/; SameSite=None; secure; HttpOnly');
+    set(jar, 'rtFa=; domain=sharepoint.com; expires=Thu, 01-Jan-1970 08:00:00 GMT; path=/; SameSite=None; Partitioned; secure; HttpOnly');
+    expect([...jar.values()].map((c) => `${c.name}=${c.value}`).sort()).toEqual(['FedAuth=neu', 'rtFa=neu']);
+  });
+
+  it('partitionierte und normale Cookies gleichen Namens existieren getrennt', () => {
+    const jar = new Map<string, StoredCookie>();
+    set(jar, 'a=normal; path=/; secure');
+    set(jar, 'a=part; path=/; secure; Partitioned');
+    expect(jar.size).toBe(2);
+    set(jar, 'a=; path=/; secure; Max-Age=0');
+    expect([...jar.values()].map((c) => c.value)).toEqual(['part']);
+  });
+
+  it('Partitioned ohne Secure wird verworfen', () => {
+    expect(parseSetCookie('a=1; Partitioned', u, NOW)).toBeNull();
+  });
+});
