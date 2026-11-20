@@ -42,8 +42,12 @@ export function startServer({ key, cert, port }) {
         res.writeHead(302, {
           location: target.href,
           'set-cookie': [
+            // Wie SharePoint (Stand 11/2026): nach jedem Cookie wird die
+            // partitionierte Variante gleichen Namens gelöscht.
             `FedAuth=${user}-fedauth; Path=/; Secure; HttpOnly; SameSite=None`,
+            'FedAuth=; expires=Thu, 01-Jan-1970 08:00:00 GMT; path=/; SameSite=None; Partitioned; secure; HttpOnly',
             `rtFa=${user}-rtfa; Domain=sharepoint.com; Path=/; Secure; HttpOnly; SameSite=None`,
+            'rtFa=; domain=sharepoint.com; expires=Thu, 01-Jan-1970 08:00:00 GMT; path=/; SameSite=None; Partitioned; secure; HttpOnly',
           ],
         });
         res.end();

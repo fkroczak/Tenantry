@@ -92,7 +92,13 @@ function dedupeByName(list: StoredCookie[]): StoredCookie[] {
   const byName = new Map<string, StoredCookie>();
   for (const c of list) {
     const prev = byName.get(c.name);
-    if (!prev || c.path.length > prev.path.length || (c.path.length === prev.path.length && labels(c.domain) > labels(prev.domain))) {
+    if (
+      !prev ||
+      // Unpartitioniert vor partitioniert (Tenantry bildet Partitionen nicht ab).
+      (!!prev.partitioned && !c.partitioned) ||
+      (!!prev.partitioned === !!c.partitioned &&
+        (c.path.length > prev.path.length || (c.path.length === prev.path.length && labels(c.domain) > labels(prev.domain))))
+    ) {
       byName.set(c.name, c);
     }
   }
