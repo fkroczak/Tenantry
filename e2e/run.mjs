@@ -120,9 +120,28 @@ try {
     await p.waitForSelector('#sp', { timeout: 10_000 }).catch(() => undefined);
     return (await p.textContent('#sp').catch(() => null)) ?? (await p.content());
   };
+  const diagOn = await send({ type: 'diag:start' });
+  check('Diagnose: Aufzeichnung startet', diagOn.ok && diagOn.data.recording === true, JSON.stringify(diagOn));
   await gotoSettled(pA, 'https://contoso-admin.sharepoint.com/_layouts/15/online/AdminHome.aspx');
   const sA = await spWait(pA);
   check('SharePoint (A): Anmeldung per form_post + 302 klappt', /SP-OK alice-fedauth/.test(sA), sA);
+  await sleep(300);
+  await send({ type: 'diag:stop' });
+  const diagJson = (await send({ type: 'diag:export' })).data;
+  const diagDoc = JSON.parse(diagJson);
+  const kinds = new Set(diagDoc.entries.map((e) => e.kind));
+  check(
+    'Diagnose: Requests, Antworten und Regel-Updates aufgezeichnet',
+    ['req', 'send', 'resp', 'dnr:sync', 'jar:fromResponse'].every((k) => kinds.has(k)),
+    [...kinds].join(','),
+  );
+  check(
+    'Diagnose: Set-Cookie FedAuth erfasst (ohne Wert)',
+    diagDoc.entries.some((e) => e.kind === 'resp' && (e.setCookies ?? []).some((c) => c.startsWith('FedAuth='))),
+    '',
+  );
+  check('Diagnose: keine Cookie-Werte im Export', !/alice-fedauth|alice-oidc/.test(diagJson), diagJson.slice(0, 400));
+  await send({ type: 'diag:clear' });
   await gotoSettled(pB, 'https://fabrikam-admin.sharepoint.com/_layouts/15/online/AdminHome.aspx');
   const sB = await spWait(pB);
   check('SharePoint (B): Anmeldung per form_post + 302 klappt', /SP-OK bob-fedauth/.test(sB), sB);

@@ -6,6 +6,9 @@ die Versionsnummern folgen [Semantic Versioning](https://semver.org/lang/de/) (`
 
 ## [Unreleased]
 
+### Hinzugefügt
+- Diagnose-Aufzeichnung im Popup („Diagnose“: Starten, Stoppen, Exportieren, Leeren). Protokolliert für die M365-Domains Requests, Weiterleitungen, Status, gesendete und gesetzte Cookies (nur Namen und Prüfsumme), Formularfeld-Namen und Tenantrys eigene Schritte (Regel-Updates, Wiederholungen, Script-Cookies) und vergleicht die gesendeten Cookies mit dem Container. Cookie-Werte, Token und Formularinhalte werden nicht gespeichert. Die Aufzeichnung endet nach 30 Minuten automatisch und verfällt mit dem Browser.
+
 ## [0.3.0] – 2026-11-16
 
 ### Geändert

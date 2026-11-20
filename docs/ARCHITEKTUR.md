@@ -38,6 +38,7 @@
 | `src/shared/types.ts` | Container-Modell, Farben, Nachrichtentypen |
 | `src/background/*` | Service Worker (siehe Diagramm) |
 | `src/background/stale.ts` | Erkennt Navigationen mit veralteten Cookies (Redirect-Race) |
+| `src/background/diag.ts`, `diagFormat.ts` | Diagnose-Aufzeichnung (Popup → „Diagnose“), Werte nur als Länge + Prüfsumme |
 | `src/content/main.ts` | Isolierung in der Seite (MAIN-World) |
 | `src/content/bridge.ts` | Vermittler Seite ↔ Service Worker (ISOLATED-World) |
 | `src/popup/*` | Popup-UI (ohne Framework) |

@@ -18,6 +18,7 @@ import {
   type Result,
 } from '../shared/types';
 import { extractSetCookies, onNativeCookieChanged, parseResponseCookies, scrubNative } from './capture';
+import { diag, diagClear, diagExport, diagStart, diagStatus, diagStop, registerDiagListeners } from './diag';
 import { hasRules, initDnr, syncTabs, whenSynced } from './dnr';
 import { ensureGrouped, enforceGroupLook, recoverFromGroups, refreshGroups, ungroup } from './groups';
 import { applyCookies, deleteJar, flush, listCookies, loadJars, purgeExpired } from './jar';
@@ -34,6 +35,7 @@ import {
   tabsOf,
   validateName,
 } from './state';
+import { redactUrl, summarizeSetCookie } from './diagFormat';
 import { missingCookies, RetryLimiter } from './stale';
 import { log, randomId, warn } from './util';
 
@@ -46,6 +48,8 @@ const EXTERNAL_IDP_ORIGINS = ['https://*/*'];
 const ready: Promise<void> = boot().catch((e) => {
   warn('Start fehlgeschlagen', e);
 });
+
+registerDiagListeners(ready);
 
 async function boot(): Promise<void> {
   const { fresh } = await loadState();
@@ -93,6 +97,7 @@ async function assignTab(tabId: number, cid: string | null, opts: { reload?: boo
   await syncTabs([tabId]);
   updateBadge(tabId);
   if (cid) void ensureGrouped(tabId);
+  diag('tab:assign', { tab: tabId, reload: !!opts.reload });
   if (opts.reload) await chrome.tabs.reload(tabId).catch(() => undefined);
 }
 
@@ -245,7 +250,9 @@ chrome.webRequest.onHeadersReceived.addListener(
       const cookies = parseResponseCookies(details, headers);
       if (!cookies.length) return;
       scrubNative(cookies, new URL(details.url).hostname);
-      if (applyCookies(cid, cookies)) await onJarChanged(cid);
+      const changed = applyCookies(cid, cookies);
+      if (changed) await onJarChanged(cid);
+      diag('jar:fromResponse', { tab: details.tabId, req: details.requestId, names: cookies.map((c) => c.name), changed, rulesSyncedAfterMs: Math.round(Date.now() - details.timeStamp) });
     });
     return undefined;
   },
@@ -275,9 +282,11 @@ chrome.webRequest.onSendHeaders.addListener(
       if (state.tabs.get(details.tabId) !== cid) return;
       if (!staleRetry.allow(details.tabId, Date.now())) {
         warn('Navigation mit veralteten Cookies, Wiederholungslimit erreicht', details.url, missing);
+        diag('stale:limit', { tab: details.tabId, req: details.requestId, url: redactUrl(details.url), missing });
         return;
       }
       log('Navigation mit veralteten Cookies wird wiederholt', details.url, missing);
+      diag('stale:retry', { tab: details.tabId, req: details.requestId, url: redactUrl(details.url), missing });
       await chrome.tabs.update(details.tabId, { url: details.url }).catch(() => undefined);
     });
   },
@@ -324,13 +333,20 @@ async function handleContent(msg: ContentRequest, sender: chrome.runtime.Message
   switch (msg.type) {
     case 'content:hello': {
       const res: HelloResponse = { cid, cookies: cid ? jsCookies(cid) : [] };
+      if (cid) diag('content:hello', { tab: tabId, frame: sender.frameId, url: redactUrl(sender.url) });
       return res;
     }
     case 'content:setCookie': {
       if (!cid || typeof msg.cookie !== 'string' || !urlInScope(sender.url)) return false;
       const parsed = parseSetCookie(msg.cookie, new URL(sender.url!), Date.now(), { fromScript: true });
-      if (!parsed) return false;
-      if (applyCookies(cid, [parsed], { fromScript: true })) await onJarChanged(cid);
+      if (!parsed) {
+        diag('content:setCookie', { tab: tabId, url: redactUrl(sender.url), cookie: summarizeSetCookie(msg.cookie), rejected: true });
+        return false;
+      }
+      const t0 = Date.now();
+      const changed = applyCookies(cid, [parsed], { fromScript: true });
+      if (changed) await onJarChanged(cid);
+      diag('content:setCookie', { tab: tabId, url: redactUrl(sender.url), cookie: summarizeSetCookie(msg.cookie), changed, rulesSyncedAfterMs: Date.now() - t0 }, t0);
       return true;
     }
   }
@@ -402,6 +418,16 @@ async function handlePopup(msg: PopupRequest): Promise<unknown> {
       const url = tab.url && /^https?:\/\//.test(tab.url) ? tab.url : 'https://www.office.com/';
       return openInContainer(msg.id, url, tab);
     }
+    case 'diag:status':
+      return diagStatus();
+    case 'diag:start':
+      return diagStart();
+    case 'diag:stop':
+      return diagStop();
+    case 'diag:clear':
+      return diagClear();
+    case 'diag:export':
+      return diagExport();
     case 'maintenance:clearServiceWorkers': {
       await chrome.browsingData.remove(
         { origins: [...KNOWN_APP_ORIGINS] as [string, ...string[]] },

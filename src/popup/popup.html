@@ -48,6 +48,20 @@
       <p class="hint">Hilft, wenn eine Seite in einem Container dauerhaft die falsche Sitzung zeigt.</p>
     </details>
 
+    <details id="diag">
+      <summary>Diagnose <span id="diagBadge" class="rec" hidden>● Aufzeichnung läuft</span></summary>
+      <p class="hint">
+        Zeichnet den Anmeldeablauf auf (Adressen, Weiterleitungen, Cookie-Namen, Tenantry-Schritte). Cookie-Werte, Token
+        und Formularinhalte werden nicht gespeichert. Ablauf: Starten → Fehler nachstellen → Stoppen → Exportieren.
+      </p>
+      <div class="row">
+        <button id="diagToggle" type="button" class="primary">Aufzeichnung starten</button>
+        <button id="diagExport" type="button">Exportieren</button>
+        <button id="diagClear" type="button">Leeren</button>
+      </div>
+      <p id="diagInfo" class="hint"></p>
+    </details>
+
     <p id="error" class="error" role="alert" hidden></p>
     <script src="popup.js"></script>
   </body>

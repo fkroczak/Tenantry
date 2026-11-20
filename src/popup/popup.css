@@ -63,3 +63,5 @@ summary { cursor: pointer; color: var(--muted); }
 .error { color: var(--danger); margin: 8px 0 0; }
 .edit { flex-wrap: wrap; }
 .version { margin-left: auto; color: var(--muted); font-size: 11px; }
+.rec { color: var(--danger); font-weight: 600; margin-left: 6px; }
+#diag .row { margin: 4px 0; }
