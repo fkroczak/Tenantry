@@ -68,7 +68,18 @@ export type PopupRequest =
   | { type: 'container:delete'; id: string }
   | { type: 'container:openTab'; id: string; url: string }
   | { type: 'tab:reopenIn'; tabId: number; id: string }
-  | { type: 'maintenance:clearServiceWorkers' };
+  | { type: 'maintenance:clearServiceWorkers' }
+  | { type: 'diag:status' }
+  | { type: 'diag:start' }
+  | { type: 'diag:stop' }
+  | { type: 'diag:clear' }
+  | { type: 'diag:export' };
+
+export interface DiagStatus {
+  recording: boolean;
+  since: number | null;
+  count: number;
+}
 
 export type ContentRequest =
   | { type: 'content:hello' }

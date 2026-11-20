@@ -5,6 +5,7 @@ import {
   TAB_GROUP_COLORS,
   type Container,
   type ContainerColor,
+  type DiagStatus,
   type PopupRequest,
   type PopupState,
   type Result,
@@ -186,6 +187,53 @@ function editRow(c: Container): HTMLLIElement {
   return h('li', { className: 'edit' }, name, swatches(color, (x) => (color = x)), save, cancel);
 }
 
+function renderDiag(s: DiagStatus): void {
+  const toggle = $('diagToggle') as HTMLButtonElement;
+  toggle.textContent = s.recording ? 'Aufzeichnung stoppen' : 'Aufzeichnung starten';
+  toggle.classList.toggle('danger', s.recording);
+  toggle.classList.toggle('primary', !s.recording);
+  $('diagBadge').hidden = !s.recording;
+  if (s.recording) ($('diag') as HTMLDetailsElement).open = true;
+  const since = s.since ? new Date(s.since).toLocaleTimeString() : null;
+  $('diagInfo').textContent =
+    `${s.count} Einträge` + (s.recording && since ? ` · läuft seit ${since} (stoppt nach 30 Min. automatisch)` : '');
+  ($('diagExport') as HTMLButtonElement).disabled = !s.count;
+}
+
+async function initDiag(): Promise<void> {
+  renderDiag(await call<DiagStatus>({ type: 'diag:status' }));
+  $('diagToggle').addEventListener('click', async () => {
+    try {
+      const cur = await call<DiagStatus>({ type: 'diag:status' });
+      renderDiag(await call<DiagStatus>({ type: cur.recording ? 'diag:stop' : 'diag:start' }));
+    } catch (e) {
+      showError(e);
+    }
+  });
+  $('diagClear').addEventListener('click', async () => {
+    try {
+      renderDiag(await call<DiagStatus>({ type: 'diag:clear' }));
+    } catch (e) {
+      showError(e);
+    }
+  });
+  $('diagExport').addEventListener('click', async () => {
+    try {
+      const json = await call<string>({ type: 'diag:export' });
+      const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
+      const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+      const a = h('a', { href: url, download: `tenantry-diagnose-${stamp}.json` });
+      document.body.append(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 10_000);
+    } catch (e) {
+      showError(e);
+    }
+  });
+  setInterval(() => void call<DiagStatus>({ type: 'diag:status' }).then(renderDiag, () => undefined), 1000);
+}
+
 async function init(): Promise<void> {
   $('version').textContent = 'v' + chrome.runtime.getManifest().version;
   const sel = $('startPage') as HTMLSelectElement;
@@ -231,6 +279,7 @@ async function init(): Promise<void> {
     }
   });
 
+  await initDiag().catch(showError);
   await refresh();
 }
 

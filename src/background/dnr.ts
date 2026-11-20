@@ -4,6 +4,7 @@
  * Browser-Neustarts oder ein Neuladen der Erweiterung.
  */
 import { SCOPE_REQUEST_DOMAINS } from '../shared/scope';
+import { diag } from './diag';
 import { listCookies } from './jar';
 import { buildTabRules } from './rules';
 import { state } from './state';
@@ -95,13 +96,16 @@ async function flushDirty(): Promise<void> {
   }
 
   try {
+    const t0 = Date.now();
     await chrome.declarativeNetRequest.updateSessionRules({ removeRuleIds, addRules });
+    diag('dnr:sync', { tabs: batch, rules: addRules.length, ms: Date.now() - t0 }, t0);
     for (const [tabId, ids] of nextMap) {
       if (ids.length) tabRuleIds.set(tabId, ids);
       else tabRuleIds.delete(tabId);
     }
   } catch (e) {
     warn('updateSessionRules fehlgeschlagen', e);
+    diag('dnr:error', { tabs: batch, error: String(e) });
     // Zustand zurücksetzen: alte Regeln sind evtl. noch aktiv.
     for (const [tabId, ids] of nextMap) {
       const prev = (tabRuleIds.get(tabId) ?? []).filter((id) => !ids.includes(id));
