@@ -6,6 +6,8 @@ die Versionsnummern folgen [Semantic Versioning](https://semver.org/lang/de/) (`
 
 ## [Unreleased]
 
+## [0.5.0] – 2026-11-20
+
 ### Hinzugefügt
 - **Update-Funktion:** Tenantry fragt alle paar Stunden das neueste GitHub-Release ab und zeigt neue Versionen mit „↑“ am Symbol und einem Hinweis im Popup. Werden die Dateien im Erweiterungsordner ersetzt, lädt sich Tenantry innerhalb einer Minute selbst neu (oder per „Jetzt neu laden“). Container bleiben dabei erhalten.
 - **Installer und Updater für Windows** in der ZIP: `Install-Tenantry.cmd` installiert nach `%LOCALAPPDATA%\Tenantry` und legt im Startmenü „Tenantry aktualisieren“ an. `Tenantry-Update.cmd` lädt das neueste Release in denselben Ordner.
@@ -55,7 +57,8 @@ Erster Prototyp (Phase 1).
 - Popup: Container-Liste, „+ Tab“ mit wählbarer Startseite, aktueller Container, „In Container öffnen“, Optionen für externe IdPs und Service-Worker-Bereinigung.
 - Build mit esbuild, Unit-Tests (vitest), End-to-End-Test mit Chromium.
 
-[Unreleased]: https://github.com/fkroczak/Tenantry/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/fkroczak/Tenantry/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/fkroczak/Tenantry/releases/tag/v0.5.0
 [0.4.1]: https://github.com/fkroczak/Tenantry/releases/tag/v0.4.1
 [0.4.0]: https://github.com/fkroczak/Tenantry/releases/tag/v0.4.0
 [0.3.0]: https://github.com/fkroczak/Tenantry/releases/tag/v0.3.0
