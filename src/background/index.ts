@@ -18,6 +18,7 @@ import {
   type Result,
 } from '../shared/types';
 import { extractSetCookies, onNativeCookieChanged, parseResponseCookies, scrubNative } from './capture';
+import { exportBackup, importBackup, lastBackupAt } from './backup';
 import { diag, diagClear, diagExport, diagStart, diagStatus, diagStop, registerDiagListeners } from './diag';
 import { hasRules, initDnr, syncTabs, whenSynced } from './dnr';
 import { ensureGrouped, enforceGroupLook, recoverFromGroups, refreshGroups, ungroup } from './groups';
@@ -37,6 +38,7 @@ import {
 } from './state';
 import { redactUrl, summarizeSetCookie } from './diagFormat';
 import { missingCookies, RetryLimiter } from './stale';
+import { checkForUpdate, getUpdateInfo, reloadIfUpdatedOnDisk, showUpdateBadge, versionOnDisk } from './update';
 import { log, randomId, warn } from './util';
 
 const EXTERNAL_IDP_ORIGINS = ['https://*/*'];
@@ -83,6 +85,10 @@ async function boot(): Promise<void> {
   await saveTabs();
   for (const tabId of state.tabs.keys()) updateBadge(tabId);
   void chrome.alarms.create('purge', { periodInMinutes: 1 });
+  // Update: GitHub alle 6 h fragen, Ordner jede Minute auf neue Dateien prüfen.
+  void chrome.alarms.create('update-check', { periodInMinutes: 60, delayInMinutes: 1 });
+  void chrome.alarms.create('update-disk', { periodInMinutes: 1 });
+  void showUpdateBadge();
 }
 
 // ---------------------------------------------------------------------------
@@ -104,7 +110,8 @@ async function assignTab(tabId: number, cid: string | null, opts: { reload?: boo
 function updateBadge(tabId: number): void {
   const c = containerOfTab(tabId);
   const text = c ? c.name.replace(/[^\p{L}\p{N}]/gu, '').slice(0, 2).toUpperCase() || '•' : '';
-  chrome.action.setBadgeText({ tabId, text }).catch(() => undefined);
+  // null = Standard-Badge (z. B. „↑“ für ein verfügbares Update) anzeigen.
+  chrome.action.setBadgeText({ tabId, text: c ? text : (null as unknown as string) }).catch(() => undefined);
   if (c) chrome.action.setBadgeBackgroundColor({ tabId, color: COLOR_HEX[c.color] }).catch(() => undefined);
   chrome.action.setTitle({ tabId, title: c ? `Tenantry – Container: ${c.name}` : 'Tenantry' }).catch(() => undefined);
 }
@@ -115,6 +122,28 @@ async function onJarChanged(cid: string): Promise<void> {
   await syncTabs(tabs);
   const msg: CookiePush = { type: 'bg:cookies', cid, cookies: jsCookies(cid) };
   for (const tabId of tabs) chrome.tabs.sendMessage(tabId, msg).catch(() => undefined);
+}
+
+/**
+ * Nach einer Wiederherstellung: offene Tab-Gruppen mit dem Namen eines
+ * Containers wieder diesem Container zuordnen und neu laden.
+ */
+async function adoptOpenGroups(): Promise<void> {
+  const recovered = await recoverFromGroups();
+  const changed: number[] = [];
+  for (const [tabId, cid] of recovered) {
+    if (state.tabs.get(tabId) === cid) continue;
+    state.tabs.set(tabId, cid);
+    changed.push(tabId);
+  }
+  if (!changed.length) return;
+  await saveTabs();
+  await syncTabs(changed);
+  for (const tabId of changed) {
+    updateBadge(tabId);
+    const tab = await chrome.tabs.get(tabId).catch(() => null);
+    if (tab && !tab.discarded && urlInScope(tab.url)) void chrome.tabs.reload(tabId);
+  }
 }
 
 function jsCookies(cid: string) {
@@ -297,6 +326,8 @@ chrome.webRequest.onSendHeaders.addListener(
 chrome.cookies.onChanged.addListener(onNativeCookieChanged);
 
 chrome.alarms.onAlarm.addListener((a) => {
+  if (a.name === 'update-check') void checkForUpdate().catch((e) => warn('Update-Prüfung fehlgeschlagen', e));
+  if (a.name === 'update-disk') void ready.then(() => reloadIfUpdatedOnDisk(flush));
   if (a.name !== 'purge') return;
   void ready.then(async () => {
     for (const cid of purgeExpired()) await onJarChanged(cid);
@@ -383,7 +414,9 @@ async function handlePopup(msg: PopupRequest): Promise<unknown> {
         if (!isValidColor(msg.color)) throw new Error('Ungültige Farbe.');
         c.color = msg.color;
       }
+      if (msg.favorite !== undefined) c.favorite = !!msg.favorite;
       await saveContainers();
+      if (msg.name === undefined && msg.color === undefined) return c;
       await refreshGroups(c.id);
       for (const t of tabsOf(c.id)) updateBadge(t);
       return c;
@@ -428,6 +461,32 @@ async function handlePopup(msg: PopupRequest): Promise<unknown> {
       return diagClear();
     case 'diag:export':
       return diagExport();
+    case 'update:status': {
+      // Popup geöffnet: Ordner prüfen und (gedrosselt) GitHub fragen.
+      if (await reloadIfUpdatedOnDisk(flush)) return getUpdateInfo();
+      void checkForUpdate().catch(() => undefined);
+      return getUpdateInfo();
+    }
+    case 'update:check':
+      return checkForUpdate(true);
+    case 'update:reload': {
+      if (!(await reloadIfUpdatedOnDisk(flush))) {
+        const disk = await versionOnDisk();
+        throw new Error(`Im Erweiterungsordner liegt noch Version ${disk ?? '?'}. Zuerst Tenantry-Update.cmd ausführen.`);
+      }
+      return true;
+    }
+    case 'backup:status':
+      return lastBackupAt();
+    case 'backup:export':
+      return exportBackup(!!msg.includeCookies);
+    case 'backup:import': {
+      if (typeof msg.json !== 'string' || msg.json.length > 20_000_000) throw new Error('Ungültige Datei.');
+      const { result, changedCids } = await importBackup(msg.json);
+      for (const cid of changedCids) await onJarChanged(cid);
+      await adoptOpenGroups();
+      return result;
+    }
     case 'maintenance:clearServiceWorkers': {
       await chrome.browsingData.remove(
         { origins: [...KNOWN_APP_ORIGINS] as [string, ...string[]] },

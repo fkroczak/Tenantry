@@ -6,6 +6,21 @@ die Versionsnummern folgen [Semantic Versioning](https://semver.org/lang/de/) (`
 
 ## [Unreleased]
 
+## [0.5.0] – 2026-11-20
+
+### Geändert
+- **Neues Popup-Design** („Graphite“), ausgelegt für 20–30 und mehr Tenants: Suche mit Rangfolge (Namensanfang zuerst) und Tastatursteuerung (↑↓, Enter, Esc, /), Filter Alle/Offen/Favoriten, angeheftete ★ Favoriten, kompakte A–Z-Liste. Ein Klick klappt einen Container auf: + Tab, Admin, Outlook, Entra direkt, Aktuellen Tab hierher, Umbenennen/Farbe, Löschen. Sicherung, Diagnose und Mehr als eigene Ansichten.
+- **Hell und dunkel** automatisch nach der Windows-Einstellung, per Knopf im Kopf (oder unter „Mehr“) überschreibbar.
+- Container lassen sich als Favorit markieren; die Markierung ist Teil der Sicherung.
+
+### Hinzugefügt
+- **Update-Funktion:** Tenantry fragt alle paar Stunden das neueste GitHub-Release ab und zeigt neue Versionen mit „↑“ am Symbol und einem Hinweis im Popup. Werden die Dateien im Erweiterungsordner ersetzt, lädt sich Tenantry innerhalb einer Minute selbst neu (oder per „Jetzt neu laden“). Container bleiben dabei erhalten.
+- **Installer und Updater für Windows** in der ZIP: `Install-Tenantry.cmd` installiert nach `%LOCALAPPDATA%\Tenantry` und legt im Startmenü „Tenantry aktualisieren“ an. `Tenantry-Update.cmd` lädt das neueste Release in denselben Ordner.
+- **Sicherung** im Popup: Container (wahlweise mit Anmeldungen) als Datei speichern und wiederherstellen. Gleichnamige Container werden zusammengeführt, offene Tab-Gruppen wieder zugeordnet. Das Popup erinnert, solange keine Sicherung gespeichert wurde.
+
+### Hinweis
+- Container gehen verloren, wenn die Erweiterung in Chrome **entfernt** wird (Chrome löscht dann ihren Speicher). Zum Aktualisieren daher nicht entfernen, sondern den Updater nutzen. Wer auf den festen Installationsordner umsteigt: vorher im Popup eine Sicherung speichern.
+
 ## [0.4.1] – 2026-11-20
 
 ### Behoben
@@ -47,7 +62,8 @@ Erster Prototyp (Phase 1).
 - Popup: Container-Liste, „+ Tab“ mit wählbarer Startseite, aktueller Container, „In Container öffnen“, Optionen für externe IdPs und Service-Worker-Bereinigung.
 - Build mit esbuild, Unit-Tests (vitest), End-to-End-Test mit Chromium.
 
-[Unreleased]: https://github.com/fkroczak/Tenantry/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/fkroczak/Tenantry/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/fkroczak/Tenantry/releases/tag/v0.5.0
 [0.4.1]: https://github.com/fkroczak/Tenantry/releases/tag/v0.4.1
 [0.4.0]: https://github.com/fkroczak/Tenantry/releases/tag/v0.4.0
 [0.3.0]: https://github.com/fkroczak/Tenantry/releases/tag/v0.3.0

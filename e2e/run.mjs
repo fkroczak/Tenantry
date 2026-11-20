@@ -276,13 +276,37 @@ try {
     await ext.screenshot({ path: process.env.SCREENSHOT });
   }
 
-  // 10) Löschen eines Containers
+  // 10) Sicherung (mit Anmeldungen) vor dem Löschen
+  const backup = await send({ type: 'backup:export', includeCookies: true });
+  check('Sicherung exportiert', backup.ok && JSON.parse(backup.data).containers.some((c) => c.name === B.name), JSON.stringify(backup).slice(0, 200));
+  const bs = await send({ type: 'backup:status' });
+  check('Sicherungszeitpunkt gespeichert', bs.ok && typeof bs.data === 'number', JSON.stringify(bs));
+
+  // 11) Löschen eines Containers
   const del = await send({ type: 'container:delete', id: B.id });
   await sleep(1000);
   const st2 = await send({ type: 'popup:state' });
   check('Container gelöscht', del.ok && st2.data.containers.length === 1, JSON.stringify(st2));
   const cAfter = await ctx.pages().find((p) => p.url().includes('outlook.office.com') && p !== pA)?.textContent('#cookie').catch(() => null);
   check('Ehemalige B-Tabs ohne B-Cookies', !/bob/.test(cAfter ?? ''), String(cAfter));
+
+  // 12) Wiederherstellen: Container B samt Anmeldung kommt zurück
+  const imp = await send({ type: 'backup:import', json: backup.data });
+  check('Sicherung geladen', imp.ok && imp.data.added === 1 && imp.data.cookies > 0, JSON.stringify(imp));
+  const st3 = await send({ type: 'popup:state' });
+  const B2 = st3.data.containers.find((c) => c.name === B.name);
+  check('Container B wiederhergestellt', !!B2 && st3.data.containers.length === 2, JSON.stringify(st3.data.containers));
+  if (B2) {
+    const t = (await send({ type: 'container:openTab', id: B2.id, url: 'https://outlook.office.com/owa' })).data;
+    await sleep(1500);
+    const pR = ctx.pages().find((p) => p.url().includes('outlook.office.com/owa') && p !== pA && !/bob/.test(cAfter ?? '') && p.url());
+    const texts = await Promise.all(ctx.pages().map((p) => p.textContent('#cookie').catch(() => '')));
+    check('Wiederhergestellte Anmeldung wird gesendet', texts.some((x) => /bob/.test(x ?? '')), JSON.stringify(texts));
+    void t;
+    void pR;
+  }
+  const upd = await send({ type: 'update:status' });
+  check('Update-Status abrufbar', upd.ok && upd.data.current === JSON.parse(readFileSync(join(dist, 'manifest.json'), 'utf8')).version, JSON.stringify(upd));
 } catch (e) {
   failed++;
   console.error(e);

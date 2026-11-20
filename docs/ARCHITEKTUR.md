@@ -38,6 +38,9 @@
 | `src/shared/types.ts` | Container-Modell, Farben, Nachrichtentypen |
 | `src/background/*` | Service Worker (siehe Diagramm) |
 | `src/background/stale.ts` | Erkennt Navigationen mit veralteten Cookies (Redirect-Race) |
+| `src/background/update.ts` | Release-Prüfung (GitHub-API), Selbst-Neuladen bei neuen Dateien im Ordner |
+| `src/background/backup.ts` | Sicherung/Wiederherstellung der Container (Datei) |
+| `static/updater/*` | Windows-Installer und -Updater (landen im Wurzelverzeichnis der ZIP) |
 | `src/background/diag.ts`, `diagFormat.ts` | Diagnose-Aufzeichnung (Popup → „Diagnose“), Werte nur als Länge + Prüfsumme |
 | `src/content/main.ts` | Isolierung in der Seite (MAIN-World) |
 | `src/content/bridge.ts` | Vermittler Seite ↔ Service Worker (ISOLATED-World) |
