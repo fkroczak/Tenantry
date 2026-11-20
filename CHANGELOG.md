@@ -6,6 +6,8 @@ die Versionsnummern folgen [Semantic Versioning](https://semver.org/lang/de/) (`
 
 ## [Unreleased]
 
+## [0.4.1] – 2026-11-20
+
 ### Behoben
 - SharePoint-Anmeldung in Containern schlug wieder fehl („Eine Anmeldung ist nicht möglich“ bzw. Anmeldeschleife). SharePoint schickt seit Kurzem nach jedem Anmelde-Cookie (`FedAuth`, `rtFa`, `SPA_RT`, `SIMI`, …) einen zweiten Set-Cookie-Header, der die *partitionierte* Variante (`Partitioned`, CHIPS) gleichen Namens löscht. Tenantry hat `Partitioned` ignoriert und dadurch das gerade gesetzte Cookie sofort wieder gelöscht. Partitionierte Cookies werden jetzt wie in Chrome getrennt geführt; bei gleichem Namen wird das unpartitionierte Cookie gesendet.
 
@@ -45,7 +47,8 @@ Erster Prototyp (Phase 1).
 - Popup: Container-Liste, „+ Tab“ mit wählbarer Startseite, aktueller Container, „In Container öffnen“, Optionen für externe IdPs und Service-Worker-Bereinigung.
 - Build mit esbuild, Unit-Tests (vitest), End-to-End-Test mit Chromium.
 
-[Unreleased]: https://github.com/fkroczak/Tenantry/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/fkroczak/Tenantry/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/fkroczak/Tenantry/releases/tag/v0.4.1
 [0.4.0]: https://github.com/fkroczak/Tenantry/releases/tag/v0.4.0
 [0.3.0]: https://github.com/fkroczak/Tenantry/releases/tag/v0.3.0
 [0.2.0]: https://github.com/fkroczak/Tenantry/releases/tag/v0.2.0
