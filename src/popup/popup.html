@@ -12,6 +12,22 @@
       <span id="version" class="version"></span>
     </header>
 
+    <section id="update" class="card update" hidden>
+      <div class="row between">
+        <strong id="updateTitle"></strong>
+        <a id="updatePage" href="#" target="_blank" rel="noopener">Details</a>
+      </div>
+      <ol class="hint steps">
+        <li>Startmenü → <b>Tenantry aktualisieren</b> (oder <b>Tenantry-Update.cmd</b> im Tenantry-Ordner) – lädt die neue Version in denselben Ordner.</li>
+        <li>Tenantry lädt sich danach innerhalb einer Minute selbst neu – oder hier klicken:</li>
+      </ol>
+      <div class="row">
+        <button id="updateReload" type="button" class="primary">Jetzt neu laden</button>
+        <a id="updateZip" href="#" target="_blank" rel="noopener">ZIP herunterladen</a>
+      </div>
+      <p class="hint">Die Erweiterung nicht entfernen – sonst gehen die Container verloren.</p>
+    </section>
+
     <section id="current" class="card" aria-live="polite"></section>
 
     <section>
@@ -46,6 +62,29 @@
       </p>
       <button id="clearSw" type="button">Service Worker der M365-Seiten entfernen</button>
       <p class="hint">Hilft, wenn eine Seite in einem Container dauerhaft die falsche Sitzung zeigt.</p>
+    </details>
+
+    <details id="backup">
+      <summary>Sicherung <span id="backupWarn" class="warn" hidden>● noch keine Sicherung</span></summary>
+      <p class="hint">
+        Container werden in Chrome gespeichert und bleiben bei Updates erhalten. Wird die Erweiterung entfernt, sind sie
+        weg – dafür gibt es diese Sicherungsdatei.
+      </p>
+      <label class="check">
+        <input id="backupCookies" type="checkbox" />
+        Anmeldungen einschließen (keine erneute Anmeldung nötig)
+      </label>
+      <p class="hint">Achtung: Die Datei enthält dann Zugangstoken. Nur sicher aufbewahren, nicht weitergeben.</p>
+      <div class="row">
+        <button id="backupExport" type="button" class="primary">Sicherung speichern</button>
+        <button id="backupImport" type="button">Sicherung laden …</button>
+        <input id="backupFile" type="file" accept=".json,application/json" hidden />
+      </div>
+      <p id="backupInfo" class="hint"></p>
+      <div class="row">
+        <button id="updateCheck" type="button">Nach Updates suchen</button>
+        <span id="updateInfo" class="hint"></span>
+      </div>
     </details>
 
     <details id="diag">

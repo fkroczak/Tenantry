@@ -5,7 +5,9 @@ import {
   TAB_GROUP_COLORS,
   type Container,
   type ContainerColor,
+  type BackupResult,
   type DiagStatus,
+  type UpdateInfo,
   type PopupRequest,
   type PopupState,
   type Result,
@@ -221,8 +223,7 @@ async function initDiag(): Promise<void> {
     try {
       const json = await call<string>({ type: 'diag:export' });
       const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
-      const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
-      const a = h('a', { href: url, download: `tenantry-diagnose-${stamp}.json` });
+      const a = h('a', { href: url, download: `tenantry-diagnose-${stamp()}.json` });
       document.body.append(a);
       a.click();
       a.remove();
@@ -232,6 +233,84 @@ async function initDiag(): Promise<void> {
     }
   });
   setInterval(() => void call<DiagStatus>({ type: 'diag:status' }).then(renderDiag, () => undefined), 1000);
+}
+
+function saveFile(content: string, name: string): void {
+  const url = URL.createObjectURL(new Blob([content], { type: 'application/json' }));
+  const a = h('a', { href: url, download: name });
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+}
+
+const stamp = () => new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+
+function renderUpdate(u: UpdateInfo): void {
+  $('update').hidden = !u.available;
+  $('updateTitle').textContent = `Update verfügbar: v${u.current} → v${u.latest}`;
+  ($('updatePage') as HTMLAnchorElement).href = u.pageUrl;
+  const zip = $('updateZip') as HTMLAnchorElement;
+  zip.hidden = !u.zipUrl;
+  if (u.zipUrl) zip.href = u.zipUrl;
+  const when = u.checkedAt ? new Date(u.checkedAt).toLocaleString() : 'nie';
+  $('updateInfo').textContent = u.error
+    ? `Prüfung fehlgeschlagen: ${u.error}`
+    : u.available
+      ? `v${u.latest} verfügbar (geprüft ${when})`
+      : `Aktuell (v${u.current}, geprüft ${when})`;
+}
+
+async function initUpdateAndBackup(): Promise<void> {
+  renderUpdate(await call<UpdateInfo>({ type: 'update:status' }));
+  $('updateCheck').addEventListener('click', async () => {
+    try {
+      $('updateInfo').textContent = 'Prüfe …';
+      renderUpdate(await call<UpdateInfo>({ type: 'update:check' }));
+    } catch (e) {
+      showError(e);
+    }
+  });
+  $('updateReload').addEventListener('click', async () => {
+    try {
+      await call({ type: 'update:reload' });
+      window.close();
+    } catch (e) {
+      showError(e);
+    }
+  });
+
+  const renderBackup = (last: number | null) => {
+    $('backupWarn').hidden = last !== null;
+    $('backupInfo').textContent = last ? `Letzte Sicherung: ${new Date(last).toLocaleString()}` : 'Noch keine Sicherung gespeichert.';
+  };
+  renderBackup(await call<number | null>({ type: 'backup:status' }));
+  $('backupExport').addEventListener('click', async () => {
+    try {
+      const withCookies = ($('backupCookies') as HTMLInputElement).checked;
+      const json = await call<string>({ type: 'backup:export', includeCookies: withCookies });
+      saveFile(json, `tenantry-sicherung-${withCookies ? 'mit-anmeldungen-' : ''}${stamp()}.json`);
+      renderBackup(await call<number | null>({ type: 'backup:status' }));
+    } catch (e) {
+      showError(e);
+    }
+  });
+  const file = $('backupFile') as HTMLInputElement;
+  $('backupImport').addEventListener('click', () => file.click());
+  file.addEventListener('change', async () => {
+    const f = file.files?.[0];
+    file.value = '';
+    if (!f) return;
+    try {
+      const r = await call<BackupResult>({ type: 'backup:import', json: await f.text() });
+      $('backupInfo').textContent =
+        `Wiederhergestellt: ${r.added} neue, ${r.updated} aktualisierte Container` + (r.cookies ? `, ${r.cookies} Anmelde-Cookies.` : '.');
+      showError(null);
+      await refresh();
+    } catch (e) {
+      showError(e);
+    }
+  });
 }
 
 async function init(): Promise<void> {
@@ -279,6 +358,7 @@ async function init(): Promise<void> {
     }
   });
 
+  await initUpdateAndBackup().catch(showError);
   await initDiag().catch(showError);
   await refresh();
 }

@@ -73,7 +73,30 @@ export type PopupRequest =
   | { type: 'diag:start' }
   | { type: 'diag:stop' }
   | { type: 'diag:clear' }
-  | { type: 'diag:export' };
+  | { type: 'diag:export' }
+  | { type: 'update:status' }
+  | { type: 'update:check' }
+  | { type: 'update:reload' }
+  | { type: 'backup:export'; includeCookies: boolean }
+  | { type: 'backup:import'; json: string }
+  | { type: 'backup:status' };
+
+export interface UpdateInfo {
+  current: string;
+  latest: string | null;
+  available: boolean;
+  pageUrl: string;
+  zipUrl: string | null;
+  notes: string | null;
+  checkedAt: number | null;
+  error: string | null;
+}
+
+export interface BackupResult {
+  added: number;
+  updated: number;
+  cookies: number;
+}
 
 export interface DiagStatus {
   recording: boolean;

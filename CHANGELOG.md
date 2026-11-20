@@ -6,6 +6,14 @@ die Versionsnummern folgen [Semantic Versioning](https://semver.org/lang/de/) (`
 
 ## [Unreleased]
 
+### Hinzugefügt
+- **Update-Funktion:** Tenantry fragt alle paar Stunden das neueste GitHub-Release ab und zeigt neue Versionen mit „↑“ am Symbol und einem Hinweis im Popup. Werden die Dateien im Erweiterungsordner ersetzt, lädt sich Tenantry innerhalb einer Minute selbst neu (oder per „Jetzt neu laden“). Container bleiben dabei erhalten.
+- **Installer und Updater für Windows** in der ZIP: `Install-Tenantry.cmd` installiert nach `%LOCALAPPDATA%\Tenantry` und legt im Startmenü „Tenantry aktualisieren“ an. `Tenantry-Update.cmd` lädt das neueste Release in denselben Ordner.
+- **Sicherung** im Popup: Container (wahlweise mit Anmeldungen) als Datei speichern und wiederherstellen. Gleichnamige Container werden zusammengeführt, offene Tab-Gruppen wieder zugeordnet. Das Popup erinnert, solange keine Sicherung gespeichert wurde.
+
+### Hinweis
+- Container gehen verloren, wenn die Erweiterung in Chrome **entfernt** wird (Chrome löscht dann ihren Speicher). Zum Aktualisieren daher nicht entfernen, sondern den Updater nutzen. Wer auf den festen Installationsordner umsteigt: vorher im Popup eine Sicherung speichern.
+
 ## [0.4.1] – 2026-11-20
 
 ### Behoben

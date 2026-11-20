@@ -6,7 +6,7 @@ Chrome-Erweiterung (Manifest V3), mit der sich **mehrere Microsoft-365-Tenants g
 * Container haben **eigene Cookies**: Set-Cookie wird abgefangen, ausgehende Requests erhalten per declarativeNetRequest die Cookies des Containers (HttpOnly/Secure inklusive).
 * **localStorage, sessionStorage, IndexedDB** u. a. sind pro Container getrennt, was für MSAL-Tokens wichtig ist.
 * Links, die eine Container-Seite in einem neuen Tab öffnet, Popups (`window.open`) und Redirects **erben** den Container. Leere neue Tabs (Strg+T, „+“, Lesezeichen, eingetippte Adressen) bleiben ohne Container, auch wenn Chrome sie neben einem gruppierten Tab einsortiert. Weitere Container-Tabs entstehen über „+ Tab“ im Popup oder indem man einen Tab in die Gruppe zieht.
-* Keine Tracker, keine externen Server. Alle Daten bleiben lokal in `chrome.storage`.
+* Keine Tracker. Alle Daten bleiben lokal in `chrome.storage`. Einzige eigene Verbindung: die Abfrage des neuesten Releases bei `api.github.com` (Update-Prüfung, ohne Nutzerdaten).
 
 > Status: Prototyp (Phase 1). Architektur und bekannte Grenzen stehen in [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md).
 
@@ -23,7 +23,23 @@ npm run typecheck
 npm run e2e          # End-to-End-Test (Playwright + Chromium + openssl nötig, siehe unten)
 ```
 
-## In Chrome laden
+## Installieren (Windows)
+
+1. Beim [neuesten Release](https://github.com/fkroczak/Tenantry/releases/latest) `tenantry-X.Y.Z.zip` herunterladen und entpacken.
+2. Im entpackten Ordner **`Install-Tenantry.cmd`** doppelklicken. Der Installer kopiert Tenantry nach `%LOCALAPPDATA%\Tenantry`, legt im Startmenü **„Tenantry aktualisieren“** an, kopiert den Pfad in die Zwischenablage und öffnet `chrome://extensions`.
+3. Einmalig: **Entwicklermodus** einschalten → **„Entpackte Erweiterung laden“** → Ordner `%LOCALAPPDATA%\Tenantry` wählen.
+
+### Aktualisieren
+
+* Tenantry prüft alle paar Stunden auf GitHub, ob es ein neues Release gibt. Dann zeigt das Symbol **„↑“** und das Popup einen Update-Hinweis.
+* Startmenü → **„Tenantry aktualisieren“** (oder `Tenantry-Update.cmd` im Tenantry-Ordner) lädt das neue Release in **denselben Ordner**. Tenantry erkennt die neuen Dateien und lädt sich innerhalb einer Minute selbst neu (oder im Popup „Jetzt neu laden“).
+* **Die Erweiterung nie entfernen, um sie zu aktualisieren.** Container und Anmeldungen liegen im Chrome-Profil (`chrome.storage`) und bleiben beim Neuladen erhalten. Chrome löscht sie aber, sobald die Erweiterung entfernt wird.
+
+### Sicherung
+
+Popup → **„Sicherung“**: speichert die Container als Datei, wahlweise samt Anmeldungen (dann enthält die Datei Zugangstoken, sicher aufbewahren). „Sicherung laden“ stellt sie wieder her, auch nach einer Neuinstallation. Gleichnamige Container werden zusammengeführt, offene Tab-Gruppen mit dem Namen eines Containers werden ihm wieder zugeordnet.
+
+## Aus dem Quellcode in Chrome laden
 
 1. `npm run build`
 2. `chrome://extensions` öffnen und oben rechts den **Entwicklermodus** einschalten.
@@ -39,6 +55,8 @@ Nach Code-Änderungen: neu bauen und in `chrome://extensions` auf ↻ klicken. O
 * **+ Tab:** öffnet die gewählte **Startseite** (Admin Center, Outlook, M365, Entra, Azure) in einem neuen Tab des Containers.
 * **✎:** Name und Farbe ändern (die Tab-Gruppe passt sich an).
 * **🗑:** Container löschen (zweimal klicken). Seine Tabs verlassen die Gruppe und werden ohne Container neu geladen, seine Cookies werden gelöscht.
+* **Sicherung:** Container (optional mit Anmeldungen) als Datei speichern und wiederherstellen, nach Updates suchen.
+* **Diagnose:** zeichnet den Anmeldeablauf ohne Cookie-Werte auf, zum Melden von Problemen.
 * **Erweitert:**
   * *Externe IdPs erlauben*: nötig für föderierte Tenants (ADFS, Okta …), bei denen der Login über eine Nicht-Microsoft-Domain läuft.
   * *Service Worker entfernen*: hilft, wenn eine M365-Seite in einem Container hartnäckig eine falsche Sitzung zeigt.
@@ -107,7 +125,7 @@ Sobald dieser Stand auf `main` liegt (Push oder gemergter PR), veröffentlicht d
 
 ## Datenschutz
 
-Tenantry sendet keinerlei Daten nach außen und enthält keine Analyse- oder Tracking-Funktionen. Container-Cookies liegen in `chrome.storage.local` (persistente Cookies) bzw. `chrome.storage.session` (Session-Cookies) des Chrome-Profils, **unverschlüsselt**. Die Erweiterung sollte daher nur auf vertrauenswürdigen Geräten genutzt werden.
+Tenantry sendet keinerlei Nutzerdaten nach außen und enthält keine Analyse- oder Tracking-Funktionen. Für die Update-Prüfung ruft die Erweiterung alle paar Stunden `https://api.github.com/repos/fkroczak/Tenantry/releases/latest` ab (ein anonymer GET ohne Cookies oder Kennungen). Container-Cookies liegen in `chrome.storage.local` (persistente Cookies) bzw. `chrome.storage.session` (Session-Cookies) des Chrome-Profils, **unverschlüsselt**. Die Erweiterung sollte daher nur auf vertrauenswürdigen Geräten genutzt werden.
 
 ## Lizenz
 
